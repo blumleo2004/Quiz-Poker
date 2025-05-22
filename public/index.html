@@ -16,6 +16,9 @@
     <button id="hostGameBtn">Als Host starten</button>
   </div>
 
+  <!-- Message Area -->
+  <div id="messageArea" style="color: red; margin-bottom: 10px; min-height: 20px; border: 1px solid #ccc; padding: 5px;"></div>
+
   <!-- Spieler-Liste -->
   <div id="playerList"></div>
 
@@ -105,6 +108,22 @@
     // Verbindung zum Server
     const socket = io();
 
+    const messageArea = document.getElementById('messageArea');
+    function showMessage(message, isError = false, duration = 5000) {
+        if (!messageArea) return;
+        messageArea.textContent = message;
+        messageArea.style.color = isError ? 'red' : 'blue'; // Or other appropriate colors
+        messageArea.style.borderColor = isError ? 'red' : 'blue';
+        if (duration > 0) {
+            setTimeout(() => {
+                if (messageArea.textContent === message) { // Clear only if message hasn't changed
+                    messageArea.textContent = '';
+                    messageArea.style.borderColor = '#ccc'; // Reset border color
+                }
+            }, duration);
+        }
+    }
+
     socket.on('connect', () => {
       console.log('Mit Server verbunden als: ' + socket.id);
     });
@@ -171,7 +190,9 @@
         const bet = Number(document.getElementById('betInput').value);
         if (bet > 0) {
           socket.emit('placeBet', bet);
-          alert('Einsatz gesetzt!');
+          showMessage('Einsatz gesetzt!', false, 3000); // isError = false, duration = 3s
+        } else {
+          showMessage('Ungültiger Einsatz. Bitte einen positiven Betrag eingeben.', true);
         }
       }
     });
@@ -196,7 +217,18 @@
 
     // Rollenzuweisung empfangen (Dealer, Blinds, etc.)
     socket.on('roleAssignment', (data) => {
-      alert(`Dealer: ${data.dealer}\nSmall Blind: ${data.smallBlind}\nBig Blind: ${data.bigBlind}`);
+      // Determine current player's name for personalized message
+      const currentPlayerName = document.getElementById('playerName').value || 'Anonym'; 
+      let roleMsg = `Dealer: ${data.dealer}, Small Blind: ${data.smallBlind}, Big Blind: ${data.bigBlind}.`;
+      if (data.dealer === currentPlayerName) {
+        roleMsg = `You are the Dealer. Small Blind: ${data.smallBlind}, Big Blind: ${data.bigBlind}.`;
+      } else if (data.smallBlind === currentPlayerName) {
+        roleMsg = `You are the Small Blind. Dealer: ${data.dealer}, Big Blind: ${data.bigBlind}.`;
+      } else if (data.bigBlind === currentPlayerName) {
+        roleMsg = `You are the Big Blind. Dealer: ${data.dealer}, Small Blind: ${data.smallBlind}.`;
+      }
+      // Displaying with a longer duration, or make it non-expiring by setting duration to 0
+      showMessage(roleMsg, false, 10000); 
     });
 
     // Neue Frage empfangen
@@ -248,7 +280,54 @@
 
     // Fehlermeldungen
     socket.on('errorMessage', (msg) => {
-      alert(msg);
+      showMessage(msg, true); // isError = true
+    });
+
+    // Server-Fehlermeldungen (vom Server als 'serverErrorMessage' gesendet)
+    socket.on('serverErrorMessage', (msg) => {
+      showMessage(msg, true); // isError = true
+    });
+
+    // Systemnachrichten (z.B. Spieler verlässt das Spiel, Host disconnected)
+    socket.on('systemMessage', (msg) => {
+      showMessage(msg, false, 7000); // Not an error, longer duration
+    });
+    
+    // Game state reset by server (e.g. host disconnected)
+    socket.on('gameStateReset', () => {
+        showMessage("Game state has been reset by the server. Waiting for host.", false, 0); // Persistent message
+        // Clear game-specific UI elements:
+        const questionArea = document.getElementById('questionArea');
+        if (questionArea) questionArea.innerHTML = '<p>Game paused. Waiting for host.</p>';
+        
+        const betSection = document.getElementById('betSection');
+        // Depending on game logic, bet section might need to be shown or hidden.
+        // If players can still join/leave, or lobby is re-shown, adjust accordingly.
+        // For now, ensure it's visible for players if they are still in 'game' view.
+        if (betSection) betSection.style.display = 'block'; 
+        
+        const answerSection = document.getElementById('answerSection');
+        if (answerSection) answerSection.style.display = 'none';
+        
+        const currentQuestionHost = document.getElementById('currentQuestion'); // Host view
+        if (currentQuestionHost) {
+            currentQuestionHost.innerHTML = '<h3>Aktuelle Frage:</h3><p>Noch keine Frage gestartet.</p>';
+        }
+        // Clear pot display
+        const potDisplay = document.getElementById('potDisplay');
+        if (potDisplay) potDisplay.textContent = 'Pot: 0 €';
+
+        // Reset input fields
+        const betInput = document.getElementById('betInput');
+        if(betInput) betInput.value = '';
+        const answerInput = document.getElementById('answerInput');
+        if(answerInput) answerInput.value = '';
+
+        // Hide player-specific game controls if they exist in a general 'game' div
+        // and show lobby or a waiting message.
+        // This example resets common elements; more specific UI state handling might be needed
+        // based on whether the client is a player or returns to lobby.
+        console.log("Client UI reset due to gameStateReset event.");
     });
 
     // Falls keine Fragen in der DB vorhanden sind
