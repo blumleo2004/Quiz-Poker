@@ -84,8 +84,6 @@ io.use((socket, next) => {
 
 // Verbindung zur MongoDB-Datenbank mit verbesserten Optionen
 mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
 })

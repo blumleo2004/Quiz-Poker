@@ -109,10 +109,7 @@ const questions = [
 async function seedDatabase() {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost/quizpoker';
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+    await mongoose.connect(mongoUri);
     console.log('Verbunden mit MongoDB für Seeding');
 
     // Lösche alle bestehenden Fragen
