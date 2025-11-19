@@ -54,12 +54,26 @@ The application is a basic working prototype with the following features:
 
 ### High Priority
 - [ ] Implement proper authentication system
+  - [ ] Allow users to identify uniquely (e.g., sessions, tokens)
+  - [ ] (Optional) Persistently store user data for profiles
 - [ ] Add input validation and sanitization
+  - [ ] Rigorously validate all incoming server-side data (e.g., using Joi)
+  - [ ] Sanitize inputs to prevent XSS
 - [ ] Implement proper error handling
-- [ ] Add rate limiting for socket connections
+  - [ ] Consistently use try...catch blocks for async operations and critical sections
+  - [ ] Send clear, user-friendly error messages to clients
+  - [ ] Log errors in detail on the server-side
+- [x] Add rate limiting for socket connections
 - [ ] Create proper frontend with modern UI/UX
+  - [ ] Develop a clear, intuitive user interface
+  - [ ] Display all relevant game information clearly (players, pot, current turn, question, hints, own answer, balance)
+  - [ ] Enable simple user interactions (join, bet, answer, fold, etc.)
 - [ ] Add proper game state management
+  - [ ] Reduce dependency on global variables (encapsulate game state per game/room)
+  - [ ] Ensure atomic and consistent state changes
+  - [ ] Implement persistence for game state (e.g., save to DB to resume after server restart)
 - [ ] Implement reconnection handling
+  - [ ] Allow players to seamlessly reconnect to an ongoing game and restore their previous state (hand, bets, etc.)
 
 ### Medium Priority
 - [ ] Add proper handling of all-in situations
@@ -82,13 +96,13 @@ The application is a basic working prototype with the following features:
 
 ## Known Issues
 
-1. No proper error handling for edge cases
-2. Global state management needs improvement
-3. No persistence of game state
-4. Basic UI/UX
-5. No proper validation of answers
-6. Questions are deleted after use
-7. No handling of multiple concurrent games
+- [ ] No proper error handling for edge cases
+- [ ] Global state management needs improvement
+- [ ] No persistence of game state
+- [ ] Basic UI/UX
+- [ ] No proper validation of answers
+- [ ] Questions are deleted after use
+- [ ] No handling of multiple concurrent games
 
 ## Contributing
 
@@ -100,4 +114,4 @@ Feel free to contribute to this project by:
 
 ## License
 
-This project is currently unlicensed. Please contact the maintainers for usage rights. 
+This project is currently unlicensed. Please contact the maintainers for usage rights.

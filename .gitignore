@@ -1,1 +1,6 @@
 /node_modules
+.env
+logs/
+test_output.txt
+test_output_2.txt
+*.code-workspace

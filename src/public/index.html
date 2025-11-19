@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Poker - Premium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" type="text/css">
+</head>
+
+<body>
+
+  <div id="app">
+    <!-- Notifications / Toasts -->
+    <div id="toast-container"></div>
+
+    <!-- Connection Status Indicator -->
+    <div id="connection-status" class="status-indicator hidden">
+      <span class="status-dot"></span> <span id="status-text">Connecting...</span>
+    </div>
+
+    <!-- LOBBY SCREEN -->
+    <section id="lobby-screen" class="screen active">
+      <div class="lobby-content glass-panel">
+        <h1 class="logo-title">QUIZ <span class="highlight">POKER</span></h1>
+        <p class="subtitle">Bet on your knowledge.</p>
+
+        <div class="input-group">
+          <input type="text" id="playerName" placeholder="Enter your name" autocomplete="off">
+        </div>
+
+        <div class="action-buttons">
+          <button id="joinGameBtn" class="btn btn-primary">Join Game</button>
+          <button id="hostGameBtn" class="btn btn-secondary">Host Game</button>
+        </div>
+
+        <div class="dev-tools">
+          <button id="clearSessionBtn" class="btn-link">🔄 Clear Session (for testing)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAME SCREEN -->
+    <section id="game-screen" class="screen hidden">
+      <!-- Header -->
+      <header class="game-header">
+        <div class="header-left">
+          <div class="logo-small">QP</div>
+          <div class="room-info">Room: <span id="roomId">Main</span></div>
+        </div>
+        <div class="header-center">
+          <div id="phase-display" class="phase-badge">WAITING</div>
+        </div>
+        <div class="header-right">
+          <div class="user-profile">
+            <span id="myPlayerNameDisplay">Player</span>
+            <span class="chip-count">🪙 <span id="myPlayerChipsDisplay">1000</span></span>
+          </div>
+          <button id="logoutBtn" class="btn-icon" title="Logout / Leave Game">🚪</button>
+        </div>
+      </header>
+
+      <!-- Main Table Area -->
+      <main class="game-table-area">
+        <div class="poker-table-felt">
+          <div class="table-center-content">
+            <div id="pot-container" class="pot-container">
+              <div class="pot-label">POT</div>
+              <div id="pot-amount" class="pot-amount">0</div>
+            </div>
+
+            <!-- Community Cards / Question Area -->
+            <div id="center-info-area" class="center-info glass-panel">
+              <div id="question-display" class="question-box hidden">
+                <h3 class="question-label">QUESTION</h3>
+                <p id="question-text">Waiting for next round...</p>
+              </div>
+              <div id="hints-display" class="hints-box hidden">
+                <!-- Hints will appear here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Seats Container -->
+          <div id="seats-container" class="seats-ring">
+            <!-- Seats will be injected here by JS -->
+          </div>
+        </div>
+      </main>
+
+      <!-- Action Bar (Bottom) -->
+      <footer class="game-controls-bar">
+        <!-- Player Controls -->
+        <div id="player-controls" class="controls-group hidden">
+          <div class="betting-inputs">
+            <input type="number" id="betInput" placeholder="Amount" min="0">
+            <div class="quick-bets">
+              <button class="btn-chip" data-amount="min">Min</button>
+              <button class="btn-chip" data-amount="half">1/2 Pot</button>
+              <button class="btn-chip" data-amount="pot">Pot</button>
+              <button class="btn-chip all-in" data-action="all-in">ALL IN</button>
+            </div>
+          </div>
+          <div class="action-buttons-row">
+            <button id="foldBtn" class="btn btn-danger">Fold</button>
+            <button id="callBtn" class="btn btn-neutral">Call</button>
+            <button id="raiseBtn" class="btn btn-success">Raise</button>
+          </div>
+        </div>
+
+        <!-- Answer Input (Overlay or Bar) -->
+        <div id="answer-controls" class="controls-group hidden">
+          <input type="text" id="answerInput" placeholder="Type your answer...">
+          <button id="submitAnswerBtn" class="btn btn-primary">Submit Answer</button>
+        </div>
+
+        <!-- Host Controls -->
+        <div id="host-controls" class="controls-group host-panel hidden">
+          <span class="host-label">HOST CONTROLS</span>
+          <button id="startGameBtn" class="btn btn-primary">Start Game</button>
+          <button id="revealHintBtn" class="btn btn-secondary" disabled>Reveal Hint</button>
+          <button id="revealAnswerBtn" class="btn btn-info" disabled>Reveal Answer</button>
+          <button id="startShowdownBtn" class="btn btn-warning" disabled>Showdown</button>
+          <button id="nextQuestionBtn" class="btn btn-primary" disabled>Next Question</button>
+          <button id="skipQuestionBtn" class="btn btn-secondary" disabled>Skip Question</button>
+          <button id="resetRoundBtn" class="btn btn-warning">Reset Round</button>
+          <button id="resetGameBtn" class="btn btn-danger">Reset Game</button>
+          <div id="host-info" class="host-info">Questions: <span id="questionsCount">...</span></div>
+          <div id="answer-status" class="answer-status hidden">
+            <div class="answer-status-title">Answer Status</div>
+            <div id="answer-status-list" class="answer-status-list"></div>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="config.js"></script>
+  <!-- Effects -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="game.js"></script>
+</body>
+
+</html>

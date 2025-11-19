@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  quiz-poker:
+    container_name: quiz-poker
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongo:27017/quiz-poker
+      - NODE_ENV=production
+      # Rate limiting settings (optional, defaults used if omitted)
+      - RATE_LIMIT_WINDOW=15
+      - RATE_LIMIT_MAX=100
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6.0
+    container_name: quiz-poker-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

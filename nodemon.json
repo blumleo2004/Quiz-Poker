@@ -1,0 +1,16 @@
+{
+  "verbose": true,
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules",
+    "public/assets/**",
+    "logs/**"
+  ],
+  "watch": [
+    "src/"
+  ],
+  "ext": "js,json",
+  "events": {
+    "restart": "echo \"[nodemon] Server neu gestartet wegen Änderungen\""
+  }
+} 
