@@ -32,13 +32,13 @@ const questionSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ['leicht', 'mittel', 'schwer'],
+    enum: ['leicht', 'mittel', 'schwer', 'sehr schwer'],
     default: 'mittel'
   },
   category: {
     type: String,
     required: [true, 'Kategorie ist erforderlich'],
-    enum: ['Allgemein', 'Geschichte', 'Geographie', 'Wissenschaft', 'Sport', 'Kultur']
+    // enum: ['Allgemein', 'Geschichte', 'Geographie', 'Wissenschaft', 'Sport', 'Kultur'] // Removed enum to allow flexible categories
   },
   created: {
     type: Date,
