@@ -715,4 +715,44 @@ input:checked + .slider:before {
   width: 20px;
 }
 
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  top: 80px; /* Below header */
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(20, 20, 35, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px);
+  animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  max-width: 350px;
+  pointer-events: auto;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-left: 4px solid var(--accent-primary);
+  display: flex;
+  align-items: center;
+}
+
+.toast.success { border-left-color: var(--accent-success); }
+.toast.warning { border-left-color: var(--accent-warning); }
+.toast.error { border-left-color: var(--accent-danger); }
+.toast.info { border-left-color: var(--accent-primary); }
+
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 
