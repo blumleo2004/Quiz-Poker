@@ -228,6 +228,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     ui.submitAnswerBtn.addEventListener('click', submitAnswer);
+    
+    const revealMyAnswerBtn = document.getElementById('revealMyAnswerBtn');
+    if (revealMyAnswerBtn) {
+        revealMyAnswerBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reveal your answer to everyone?')) {
+                socket.emit('revealMyAnswer');
+                revealMyAnswerBtn.disabled = true; // Disable after clicking
+            }
+        });
+    }
 
     ui.foldBtn.addEventListener('click', () => sendAction('fold'));
     ui.callBtn.addEventListener('click', () => sendAction('call'));
@@ -401,6 +411,14 @@ socket.on('playerAction', (data) => {
     const seat = findSeatByPlayerName(data.player);
     if (seat) showActionBadge(seat, data.action);
 
+    if (data.gameState) {
+        gameState = data.gameState;
+        renderGameState();
+    }
+});
+
+socket.on('playerRevealedAnswer', (data) => {
+    showToast('A player revealed their answer!', 'warning');
     if (data.gameState) {
         gameState = data.gameState;
         renderGameState();
@@ -602,7 +620,17 @@ function submitAnswer() {
 
     socket.emit('submitFinalAnswer', finalAnswer);
     ui.answerInput.value = '';
-    ui.answerControls.classList.add('hidden'); // Hide after submit
+    // ui.answerControls.classList.add('hidden'); // Don't hide completely, just input/submit
+    ui.answerInput.classList.add('hidden');
+    ui.submitAnswerBtn.classList.add('hidden');
+    
+    // Show reveal button
+    const revealBtn = document.getElementById('revealMyAnswerBtn');
+    if (revealBtn) {
+        revealBtn.classList.remove('hidden');
+        revealBtn.disabled = false;
+    }
+    
     showToast('Answer submitted!', 'success');
 }
 
@@ -752,6 +780,11 @@ function renderSeats() {
         // Get current bet in round
         const currentBet = player.currentBetInRound || 0;
         const betDisplay = currentBet > 0 ? `<div class="player-bet">Bet: 🪙${currentBet}</div>` : '';
+        
+        // Show revealed answer if available
+        const answerDisplay = player.finalAnswer !== undefined && player.finalAnswer !== null 
+            ? `<div class="player-revealed-answer">Answer: ${player.finalAnswer}</div>` 
+            : '';
 
         seatEl.innerHTML = `
             ${isActive ? '<div class="active-indicator">▶</div>' : ''}
@@ -761,6 +794,7 @@ function renderSeats() {
             <div class="player-name">${player.name}</div>
             <div class="player-chips">🪙 ${balance}</div>
             ${betDisplay}
+            ${answerDisplay}
             <div class="player-action-badge" id="badge-${player.name}"></div>
         `;
 
@@ -821,6 +855,12 @@ function updateControls() {
     else {
         ui.playerControls.classList.add('hidden');
         ui.answerControls.classList.add('hidden');
+        
+        // Reset answer controls state for next round
+        if (ui.answerInput) ui.answerInput.classList.remove('hidden');
+        if (ui.submitAnswerBtn) ui.submitAnswerBtn.classList.remove('hidden');
+        const revealBtn = document.getElementById('revealMyAnswerBtn');
+        if (revealBtn) revealBtn.classList.add('hidden');
     }
 }
 

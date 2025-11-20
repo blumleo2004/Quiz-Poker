@@ -483,6 +483,7 @@ class Game {
     Object.values(this.players).forEach(player => {
       if (player.role === 'player') {
         player.finalAnswer = null;
+        player.isAnswerRevealed = false; // Reset revealed status
         player.currentBetInRound = 0;
         player.hasFolded = false;
         player.isActive = true; // Sicherstellen, dass alle teilnehmenden Spieler zu Beginn aktiv sind
@@ -518,6 +519,7 @@ class Game {
     }
     // TODO: Antwortvalidierung hier einfügen (Schritt 3)
     player.finalAnswer = answer;
+    player.isAnswerRevealed = false; // Ensure it starts hidden
     logGameEvent('PLAYER_SUBMITTED_ANSWER', { socketId, name: player.name, answer });
 
     // Notify everyone that a player has submitted an answer
@@ -752,7 +754,7 @@ class Game {
       this.completeBettingRound();
       return;
     }
-    // If all players who can still act are all-in, or only one player can act, proceed to showdown/next phase.
+    // If all players who can act are all-in, or only one player can act, proceed to showdown/next phase.
     if (activePlayersInGame.length === 0 && nonFoldedPlayersCount > 1 && this.bettingRound > 0) {
         logGameEvent('ALL_REMAINING_PLAYERS_ALL_IN_OR_ONLY_ONE_CAN_ACT', { context: 'moveToNextPlayer' });
         this.completeBettingRound();
@@ -1191,6 +1193,7 @@ class Game {
     Object.values(this.players).forEach(player => {
         if (player.role === 'player') {
             player.finalAnswer = null;
+            player.isAnswerRevealed = false; // Reset revealed status
             player.currentBetInRound = 0;
             player.hasFolded = false;
             player.isAllIn = false; // Reset all-in status
@@ -1227,7 +1230,8 @@ class Game {
             hasFolded: p.hasFolded || false,
             isActive: p.isActive !== undefined ? p.isActive : true,
             isAllIn: p.isAllIn || false, // Assuming player object has isAllIn
-            finalAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING) ? p.finalAnswer : undefined, // Show answers only at showdown/end
+            isAnswerRevealed: p.isAnswerRevealed || false,
+            finalAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING || p.isAnswerRevealed) ? p.finalAnswer : undefined, // Show answers only at showdown/end or if revealed
             hasAnswered: p.finalAnswer !== null && p.finalAnswer !== undefined,
         })),
         hostSocketId: this.hostSocketId,
@@ -1267,7 +1271,7 @@ class Game {
     // If it's not showdown or game end, and the client is a player, hide other players' final answers.
     if (this.state !== GameState.SHOWDOWN && this.state !== GameState.WAITING) {
         fullState.players.forEach(p => {
-            if (p.id !== socketId) {
+            if (p.id !== socketId && !p.isAnswerRevealed) { // Allow if revealed
                 delete p.finalAnswer;
             }
         });
@@ -1283,12 +1287,21 @@ class Game {
             balance: playerSelf.balance,
             score: this.playerScores[playerSelf.socketId] || 0,
             finalAnswer: playerSelf.finalAnswer, // They can always see their own answer
+            isAnswerRevealed: playerSelf.isAnswerRevealed || false,
             // any other specific details for the player
         };
     }
     
     if (socketId === this.hostSocketId) {
         fullState.isHost = true;
+        // Host always sees all answers
+        fullState.players.forEach(p => {
+             const originalPlayer = this.players[p.id];
+             if (originalPlayer && originalPlayer.finalAnswer !== null && originalPlayer.finalAnswer !== undefined) {
+                 p.finalAnswer = originalPlayer.finalAnswer;
+             }
+        });
+        
         // Host might get more details, e.g., all final answers during answering phase for verification
         if (this.state === GameState.ANSWERING) {
             fullState.allFinalAnswers = Object.values(this.players)
@@ -1331,6 +1344,24 @@ class Game {
         question: this.currentQuestion ? this.currentQuestion.question : "Round Reset",
         gameState: this.getGameStateSnapshot(),
         phase: 'ANSWERING'
+    });
+    
+    await this._saveGameToDB();
+    return true;
+  }
+
+  async revealPlayerAnswer(socketId) {
+    const player = this.getPlayer(socketId);
+    if (!player || player.finalAnswer === null) {
+        return false;
+    }
+    player.isAnswerRevealed = true;
+    logGameEvent('PLAYER_REVEALED_ANSWER', { socketId, name: player.name, answer: player.finalAnswer });
+    
+    this.io.emit('playerRevealedAnswer', { 
+        playerId: socketId, 
+        answer: player.finalAnswer,
+        gameState: this.getGameStateSnapshot() 
     });
     
     await this._saveGameToDB();

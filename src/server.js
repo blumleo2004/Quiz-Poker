@@ -393,6 +393,22 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Spieler enthüllt seine Antwort
+  socket.on('revealMyAnswer', async () => {
+    try {
+      logGameEvent('REVEAL_MY_ANSWER_REQUESTED', { socketId: socket.id });
+      const success = await game.revealPlayerAnswer(socket.id);
+      if (success) {
+        logGameEvent('REVEAL_MY_ANSWER_SUCCESS', { socketId: socket.id });
+      } else {
+        socket.emit('errorMessage', "Antwort konnte nicht enthüllt werden (vielleicht noch keine abgegeben?).");
+      }
+    } catch (error) {
+      socket.emit('errorMessage', "Fehler beim Enthüllen der Antwort: " + error.message);
+      logError(error, { context: 'revealMyAnswer event handler', socketId: socket.id });
+    }
+  });
+
   // Host setzt das Spiel zurück
   socket.on('resetGame', async () => {
     try {

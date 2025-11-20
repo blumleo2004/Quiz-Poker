@@ -875,3 +875,16 @@ body {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
 }
+
+.player-revealed-answer {
+  font-size: 0.8rem;
+  color: #000;
+  font-weight: 800;
+  background: var(--accent-success);
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-top: 4px;
+  border: 1px solid #fff;
+  box-shadow: 0 0 10px var(--accent-success);
+  animation: popIn 0.3s ease-out;
+}
