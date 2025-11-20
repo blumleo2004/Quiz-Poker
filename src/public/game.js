@@ -611,12 +611,13 @@ socket.on('showdown', (data) => {
     FXManager.confetti();
     // Show results in a modal or overlay?
     // For now, maybe just in the question area
-    ui.questionDisplay.innerHTML += `
-        <div class="winner-announce">
-            <h4>Winner: ${data.winnerName}</h4>
-            <p>Correct Answer: ${data.correctAnswer}</p>
-        </div>
+    const winnerDiv = document.createElement('div');
+    winnerDiv.className = 'winner-announce';
+    winnerDiv.innerHTML = `
+        <h4>Winner: ${data.winnerName}</h4>
+        <p>Correct Answer: ${data.correctAnswer}</p>
     `;
+    ui.questionDisplay.appendChild(winnerDiv);
     
     if (data.gameState) {
         gameState = data.gameState;
@@ -1095,13 +1096,29 @@ function updateMyProfileDisplay() {
 function showQuestion(text) {
     if (!text) return;
     ui.questionDisplay.classList.remove('hidden');
-    // Clear any previous winner announcements or revealed answers
-    const winnerAnnounce = ui.questionDisplay.querySelector('.winner-announce');
-    if (winnerAnnounce) winnerAnnounce.remove();
-    const revealedAnswer = ui.questionDisplay.querySelector('.revealed-answer');
-    if (revealedAnswer) revealedAnswer.remove();
     
-    ui.questionText.textContent = text;
+    // Check if structure is intact (it might be wiped by showdown results)
+    let qText = document.getElementById('question-text');
+    
+    if (!qText) {
+        // Structure was wiped, rebuild it
+        ui.questionDisplay.innerHTML = `
+            <h3 class="question-label">QUESTION</h3>
+            <p id="question-text">${text}</p>
+        `;
+        // Update cached reference
+        ui.questionText = document.getElementById('question-text');
+    } else {
+        // Structure exists, just clean up overlays
+        const winnerAnnounce = ui.questionDisplay.querySelector('.winner-announce');
+        if (winnerAnnounce) winnerAnnounce.remove();
+        const revealedAnswer = ui.questionDisplay.querySelector('.revealed-answer');
+        if (revealedAnswer) revealedAnswer.remove();
+        
+        qText.textContent = text;
+        // Update cache just in case
+        ui.questionText = qText;
+    }
 }
 
 function showToast(message, type = 'info') {
