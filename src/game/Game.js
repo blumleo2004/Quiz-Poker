@@ -468,9 +468,9 @@ class Game {
       return false;
     }
 
-    if (!question) {
-      this.io.to(starterSocketId).emit('errorMessage', "Keine Fragen verfügbar!");
-      logError(new Error('No questions available in DB'), { context: 'startGame' });
+    if (!question || !question.question) {
+      this.io.to(starterSocketId).emit('errorMessage', "Keine gültigen Fragen verfügbar!");
+      logError(new Error('No valid questions available in DB'), { context: 'startGame', questionData: question });
       return false; // Indicate failure
     }
 

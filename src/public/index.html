@@ -146,28 +146,42 @@
                 <button id="revealMyAnswerBtn" class="btn btn-secondary hidden">Reveal My Answer</button>
             </div>        <!-- Host Controls -->
         <div id="host-controls" class="controls-group host-panel hidden">
-          <span class="host-label">HOST CONTROLS</span>
-          <button id="startGameBtn" class="btn btn-primary">Start Game</button>
-          <button id="revealHintBtn" class="btn btn-secondary" disabled>Reveal Hint</button>
-          <button id="revealAnswerBtn" class="btn btn-info" disabled>Reveal Answer</button>
-          <button id="startShowdownBtn" class="btn btn-warning" disabled>Showdown</button>
-          <button id="nextQuestionBtn" class="btn btn-primary" disabled>Next Question</button>
-          <button id="skipQuestionBtn" class="btn btn-secondary" disabled>Skip Question</button>
-          <button id="resetRoundBtn" class="btn btn-warning">Reset Round</button>
-          <button id="resetGameBtn" class="btn btn-danger">Reset Game</button>
-          <button id="managePlayersBtn" class="btn btn-info">Manage Players</button>
-          
-          <div class="host-toggle-group">
-            <label class="switch">
-              <input type="checkbox" id="blindsToggle" checked>
-              <span class="slider round"></span>
-            </label>
-            <span class="toggle-label">Rising Blinds</span>
-          </div>
+          <div class="host-controls-grid">
+            <div class="host-section">
+              <span class="section-label">Game Flow</span>
+              <button id="startGameBtn" class="btn btn-primary btn-sm">Start Game</button>
+              <button id="nextQuestionBtn" class="btn btn-primary btn-sm" disabled>Next Question</button>
+              <button id="startShowdownBtn" class="btn btn-warning btn-sm" disabled>Showdown</button>
+            </div>
+            
+            <div class="host-section">
+              <span class="section-label">Round Actions</span>
+              <button id="revealHintBtn" class="btn btn-secondary btn-sm" disabled>Hint</button>
+              <button id="revealAnswerBtn" class="btn btn-info btn-sm" disabled>Answer</button>
+              <button id="skipQuestionBtn" class="btn btn-secondary btn-sm" disabled>Skip</button>
+            </div>
 
-          <div id="host-info" class="host-info">Questions: <span id="questionsCount">...</span></div>
+            <div class="host-section">
+              <span class="section-label">Admin</span>
+              <button id="resetRoundBtn" class="btn btn-warning btn-sm">Reset Round</button>
+              <button id="resetGameBtn" class="btn btn-danger btn-sm">Reset Game</button>
+              <button id="managePlayersBtn" class="btn btn-info btn-sm">Players</button>
+            </div>
+
+            <div class="host-section">
+               <div class="host-toggle-group">
+                <label class="switch">
+                  <input type="checkbox" id="blindsToggle" checked>
+                  <span class="slider round"></span>
+                </label>
+                <span class="toggle-label">Blinds</span>
+              </div>
+              <div id="host-info" class="host-info">Q: <span id="questionsCount">...</span></div>
+            </div>
+          </div>
+          
           <div id="answer-status" class="answer-status hidden">
-            <div class="answer-status-title">Answer Status</div>
+            <div class="answer-status-title">Status</div>
             <div id="answer-status-list" class="answer-status-list"></div>
           </div>
         </div>
