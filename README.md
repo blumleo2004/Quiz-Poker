@@ -1,117 +1,216 @@
-# Quiz Poker
+# Quiz Poker 🎲🧠
 
-A unique combination of poker and quiz games where players bet on their knowledge and compete for the pot. Players answer questions and place bets, with the closest answer winning the pot.
+A real-time multiplayer quiz game that combines poker-style betting with trivia questions. Players submit numerical answers to questions and bet on their confidence, with the closest answer winning the pot!
 
-## Current State
+## 🎮 Features
 
-The application is a basic working prototype with the following features:
-- Real-time multiplayer using Socket.IO
-- Basic poker mechanics (blinds, betting)
-- Question-answer system with hints
-- MongoDB integration for question storage
-- Simple player management system
+### Core Gameplay
+- **Real-time Multiplayer**: Built with Socket.IO for instant synchronization
+- **Poker-Style Betting**: Four betting rounds with raise, call, and fold mechanics
+- **Progressive Hints**: Three hints revealed throughout the game
+- **Answer Validation**: Server-side validation ensures fair play
+- **Smart Winner Detection**: Closest answer wins, with tie-breaking logic
 
-### Technical Stack
-- Backend: Node.js with Express
-- Real-time Communication: Socket.IO
-- Database: MongoDB
-- Frontend: Basic HTML/JavaScript (needs improvement)
+### Host Features
+- **Live Answer Tracking**: See players' submitted answers in real-time
+- **Player Management**: Adjust balances, kick players, manage game state
+- **Flexible Controls**: Start game, reveal hints, control showdown timing
+- **Tournament Mode**: Optional increasing blinds every 3 rounds
 
-## Setup Instructions
+### Player Experience
+- **Custom Avatars**: Randomizable avatar generation
+- **Session Persistence**: Automatic reconnection handling
+- **Responsive UI**: Clean, modern interface with animations
+- **Audio Feedback**: Sound effects for all game actions
 
-1. Clone the repository
-2. Install dependencies:
+## 🏗️ Architecture
+
+### Backend
+```
+src/
+├── game/
+│   └── Game.js           # Core game logic and state management
+├── models/
+│   ├── Question.js       # MongoDB question schema
+│   └── GameSession.js    # Game state persistence
+├── config/
+│   └── gameConfig.js     # Centralized game constants
+├── utils/
+│   ├── validators.js     # Input validation utilities
+│   └── logger.js         # Winston logging
+└── server.js             # Express + Socket.IO server
+```
+
+### Frontend (Modular Architecture)
+```
+src/public/
+├── js/modules/
+│   ├── AudioManager.js   # Sound effects management
+│   ├── FXManager.js      # Visual effects & animations
+│   └── UIManager.js      # UI rendering & updates
+├── game.js               # Main game client (ES6 modules)
+├── index.html            # Game interface
+└── styles.css            # Modern, responsive styling
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v14+)
+- MongoDB
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/blumleo2004/Quiz-Poker.git
+   cd Quiz-Poker
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
-3. Make sure MongoDB is running locally
-4. Start the server:
-   ```bash
-   node server.js
+
+3. **Set up environment variables**
+   Create a `.env` file:
+   ```env
+   PORT=3000
+   MONGODB_URI=mongodb://localhost:27017/quiz-poker
+   NODE_ENV=development
    ```
-5. Open `http://localhost:3000` in your browser
 
-## Testing the Application
+4. **Seed the database** (optional)
+   ```bash
+   npm run seed
+   ```
 
-1. **Basic Game Flow:**
-   - Open the application in multiple browser windows
-   - In one window, join as "Host"
-   - In other windows, join as players with different names
-   - Host starts the game when at least 3 players have joined
-   - Players place their bets
-   - Host closes betting phase
-   - Players submit their answers
-   - Host reveals the correct answer and winner
+5. **Start the server**
+   ```bash
+   npm start
+   ```
 
-2. **Testing Scenarios:**
-   - Test with minimum 3 players
-   - Test betting with different amounts
-   - Test answer submission with both numeric and text answers
-   - Test hint system
-   - Test player disconnection handling
+6. **Open your browser**
+   Navigate to `http://localhost:3000`
 
-## Todo List
+## 🎯 How to Play
 
-### High Priority
-- [ ] Implement proper authentication system
-  - [ ] Allow users to identify uniquely (e.g., sessions, tokens)
-  - [ ] (Optional) Persistently store user data for profiles
-- [ ] Add input validation and sanitization
-  - [ ] Rigorously validate all incoming server-side data (e.g., using Joi)
-  - [ ] Sanitize inputs to prevent XSS
-- [ ] Implement proper error handling
-  - [ ] Consistently use try...catch blocks for async operations and critical sections
-  - [ ] Send clear, user-friendly error messages to clients
-  - [ ] Log errors in detail on the server-side
-- [x] Add rate limiting for socket connections
-- [ ] Create proper frontend with modern UI/UX
-  - [ ] Develop a clear, intuitive user interface
-  - [ ] Display all relevant game information clearly (players, pot, current turn, question, hints, own answer, balance)
-  - [ ] Enable simple user interactions (join, bet, answer, fold, etc.)
-- [ ] Add proper game state management
-  - [ ] Reduce dependency on global variables (encapsulate game state per game/room)
-  - [ ] Ensure atomic and consistent state changes
-  - [ ] Implement persistence for game state (e.g., save to DB to resume after server restart)
-- [ ] Implement reconnection handling
-  - [ ] Allow players to seamlessly reconnect to an ongoing game and restore their previous state (hand, bets, etc.)
+### For the Host
+1. Enter your name and click "Host Game"
+2. Wait for players to join
+3. Click "Start Game" when ready
+4. Reveal hints strategically during betting rounds
+5. Start showdown to determine the winner
+6. Click "Next Round" to continue
 
-### Medium Priority
-- [ ] Add proper handling of all-in situations
-- [ ] Implement tie-breaking system
-- [ ] Add game history and statistics
-- [ ] Create spectator mode
-- [ ] Add proper logging system
-- [ ] Implement caching for frequently accessed data
-- [ ] Add pagination for player lists
-- [ ] Create proper question management system
+### For Players
+1. Enter your name and click "Join Game"
+2. Submit your numerical answer to the question
+3. Participate in four betting rounds:
+   - **Round 1**: Initial betting
+   - **Round 2**: After first hint
+   - **Round 3**: After second hint
+   - **Round 4**: After third hint
+4. Fold if you're not confident, or raise to increase the pot
+5. Winner takes the pot!
 
-### Low Priority
-- [ ] Add animations and visual feedback
-- [ ] Implement sound effects
-- [ ] Add achievements system
-- [ ] Create leaderboard
-- [ ] Add custom themes
-- [ ] Implement chat system
-- [ ] Add mobile responsiveness
+## 🧪 Testing
 
-## Known Issues
+```bash
+# Run all tests
+npm test
 
-- [ ] No proper error handling for edge cases
-- [ ] Global state management needs improvement
-- [ ] No persistence of game state
-- [ ] Basic UI/UX
-- [ ] No proper validation of answers
-- [ ] Questions are deleted after use
-- [ ] No handling of multiple concurrent games
+# Run with coverage
+npm test -- --coverage
 
-## Contributing
+# Run specific test file
+npm test validators.test.js
+```
 
-Feel free to contribute to this project by:
-1. Forking the repository
-2. Creating a feature branch
-3. Making your changes
-4. Submitting a pull request
+## 📦 Tech Stack
 
-## License
+### Backend
+- **Express.js**: Web server framework
+- **Socket.IO**: Real-time bidirectional communication
+- **MongoDB + Mongoose**: Database and ODM
+- **Winston**: Logging
+- **Joi**: Schema validation
+- **Helmet**: Security headers
+- **CORS**: Cross-origin resource sharing
 
-This project is currently unlicensed. Please contact the maintainers for usage rights.
+### Frontend
+- **Vanilla JavaScript (ES6 Modules)**: Clean, modular code
+- **Socket.IO Client**: Real-time updates
+- **Web Audio API**: Sound effects
+- **Canvas Confetti**: Celebration animations
+- **DiceBear Avatars**: Dynamic avatar generation
+
+### Development
+- **Jest**: Unit testing
+- **ESLint**: Code linting
+- **Nodemon**: Development auto-reload
+- **Prettier**: Code formatting
+
+## 🔧 Configuration
+
+### Game Settings (`src/config/gameConfig.js`)
+```javascript
+MIN_BET: 20                    // Minimum bet amount
+BLIND_INCREASE_INTERVAL: 3     // Rounds between blind increases
+INITIAL_BALANCE: 1000          // Starting chips per player
+```
+
+### Customization
+- Add questions via MongoDB or seed script
+- Adjust betting rules in `Game.js`
+- Modify UI themes in `styles.css`
+- Configure audio in `AudioManager.js`
+
+## 📝 API Events (Socket.IO)
+
+### Client → Server
+- `joinGame`: Join as player or host
+- `startGame`: Begin a new round
+- `submitFinalAnswer`: Submit answer
+- `playerAction`: Betting action (fold/call/raise)
+- `showHint`: Reveal next hint
+- `startShowdown`: Begin winner determination
+
+### Server → Client
+- `gameStarted`: New round started
+- `answerSubmitted`: Player submitted answer (host only)
+- `bettingRoundStarted`: New betting round
+- `playerAction`: Player action broadcast
+- `hintRevealed`: Hint revealed
+- `showdownResults`: Winner announcement
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the ISC License.
+
+## 🙏 Acknowledgments
+
+- DiceBear for avatar generation API
+- Canvas Confetti for celebration effects
+- Socket.IO team for real-time capabilities
+
+## 📧 Contact
+
+Leo Blum - [@blumleo2004](https://github.com/blumleo2004)
+
+Project Link: [https://github.com/blumleo2004/Quiz-Poker](https://github.com/blumleo2004/Quiz-Poker)
+
+---
+
+**Built with ❤️ using Node.js and Socket.IO**
