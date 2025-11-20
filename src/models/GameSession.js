@@ -27,6 +27,10 @@ const GameSessionSchema = new Schema({
     revealedHints: { type: [String], default: [] }, // Hints that have been revealed
 
     pot: { type: Number, default: 0 },
+    pots: [{
+        amount: { type: Number, default: 0 },
+        eligiblePlayers: { type: [String], default: [] }
+    }],
     currentBet: { type: Number, default: 0 }, // Highest bet in the current round
     bettingRound: { type: Number, default: 0 }, // 0, 1, 2, 3
     

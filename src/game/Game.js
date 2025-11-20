@@ -25,6 +25,7 @@ class Game {
     this.state = GameState.WAITING;
     this.currentQuestion = null;
     this.pot = 0;
+    this.pots = []; // Array of { amount, eligiblePlayers }
     this.currentBet = 0; // Höchster Einsatz in der aktuellen Runde
     this.hints = [];
     this.revealedHints = []; // Track which hints have been revealed
@@ -79,6 +80,7 @@ class Game {
         hints: this.hints,
         revealedHints: this.revealedHints || [],
         pot: this.pot,
+        pots: this.pots,
         currentBet: this.currentBet,
         bettingRound: this.bettingRound,
         activePlayerSocketId: this.activePlayerSocketId,
@@ -144,6 +146,7 @@ class Game {
         this.hints = savedGame.hints || [];
         this.revealedHints = savedGame.revealedHints || [];
         this.pot = savedGame.pot || 0;
+        this.pots = savedGame.pots || [];
         this.currentBet = savedGame.currentBet || 0;
         this.bettingRound = savedGame.bettingRound || 0;
         this.activePlayerSocketId = savedGame.activePlayerSocketId;
@@ -179,6 +182,7 @@ class Game {
     this.state = GameState.WAITING;
     this.currentQuestion = null;
     this.pot = 0;
+    this.pots = [];
     this.currentBet = 0;
     this.hints = [];
     this.revealedHints = []; // Reset revealed hints
@@ -479,6 +483,7 @@ class Game {
     this.hints = question.hints ? [...question.hints] : []; // Create a copy of hints array
     this.revealedHints = []; // Reset revealed hints
     this.pot = 0;
+    this.pots = [];
     this.currentBet = 0;
     this.bettingRound = 0;
     this.activePlayerSocketId = null; // Wird in startNewBettingRound gesetzt
@@ -756,6 +761,16 @@ class Game {
   async handleFold(socketId) {
     const player = this.getPlayer(socketId); // Already validated in handlePlayerAction
     player.hasFolded = true;
+    
+    // Remove player from eligible players in all pots
+    if (this.pots && this.pots.length > 0) {
+        this.pots.forEach(pot => {
+            if (pot.eligiblePlayers) {
+                pot.eligiblePlayers = pot.eligiblePlayers.filter(id => id !== socketId);
+            }
+        });
+    }
+
     logGameEvent('PLAYER_FOLDED_IN_GAME', { socketId, name: player.name });
     this.io.emit('playerAction', {
       player: player.name,
@@ -1016,6 +1031,82 @@ class Game {
 
   async completeBettingRound() {
     logGameEvent('BETTING_ROUND_COMPLETED_IN_GAME', { round: this.bettingRound, pot: this.pot });
+    
+    // --- Side Pot Logic Start ---
+    const bets = [];
+    this.getActivePlayers().forEach(p => {
+        // Include folded players' bets? No, their money is dead and goes to the pot they were eligible for.
+        // But wait, if they folded, they are not eligible anymore.
+        // Their money is already in 'this.pot' (aggregate).
+        // We need to distribute their 'currentBetInRound' into the pots.
+        // Even if they folded, their money contributes to the pot.
+        // So we should iterate ALL players who have bets in this round.
+    });
+    
+    // Iterate all players (including folded) to gather bets
+    Object.values(this.players).forEach(p => {
+        if (p.role === 'player' && p.currentBetInRound > 0) {
+            bets.push({ 
+                socketId: p.socketId, 
+                amount: p.currentBetInRound, 
+                isAllIn: p.isAllIn,
+                hasFolded: p.hasFolded
+            });
+        }
+    });
+
+    if (bets.length > 0) {
+        bets.sort((a, b) => a.amount - b.amount);
+        
+        // Ensure we have at least one pot if it's the first round
+        if (this.pots.length === 0) {
+             // Initially, all active non-folded players are eligible
+             const eligible = this.getActivePlayers().map(p => p.socketId);
+             this.pots.push({ amount: 0, eligiblePlayers: eligible });
+        }
+
+        let previousAmount = 0;
+        for (let i = 0; i < bets.length; i++) {
+            const bet = bets[i];
+            const contribution = bet.amount - previousAmount;
+            
+            if (contribution > 0) {
+                const contributors = bets.slice(i); // All players who bet at least this much
+                const potAmountToAdd = contribution * contributors.length;
+                
+                // Determine eligible players for this slice:
+                // Contributors who have NOT folded.
+                const sliceEligible = contributors
+                    .filter(c => !c.hasFolded)
+                    .map(c => c.socketId);
+                
+                // Get the current active pot (last one)
+                let activePot = this.pots[this.pots.length - 1];
+                
+                // Check if we need a new pot.
+                // We need a new pot if the set of eligible players for this slice is strictly smaller 
+                // than the active pot's eligible players.
+                // (e.g. someone went all-in and is no longer contributing to this slice)
+                
+                const areSetsEqual = (a, b) => {
+                    if (a.length !== b.length) return false;
+                    const setB = new Set(b);
+                    return a.every(val => setB.has(val));
+                };
+                
+                if (!areSetsEqual(activePot.eligiblePlayers, sliceEligible)) {
+                    // Create new side pot
+                    activePot = { amount: 0, eligiblePlayers: sliceEligible };
+                    this.pots.push(activePot);
+                }
+                
+                activePot.amount += potAmountToAdd;
+            }
+            previousAmount = bet.amount;
+        }
+    }
+    // --- Side Pot Logic End ---
+
     this.activePlayerSocketId = null; 
     this.playerWhoMadeLastBetOrRaise = null; // Reset for next round
     this.playerWhoInitiatedCurrentBettingAction = null; // Reset for next round
@@ -1216,7 +1307,24 @@ class Game {
         return true;
     }
     if (participatingPlayers.length === 1) {
-        this.awardPotToWinner(participatingPlayers[0]);
+        // If only one player remains, they win ALL pots they are eligible for.
+        // Actually, if everyone else folded, the remaining player wins EVERYTHING on the table.
+        // Because folded players surrendered their claims to all pots.
+        // So we can just sum up all pots and give to the winner.
+        
+        let totalPotAmount = this.pot;
+        // Double check with pots array if it exists
+        if (this.pots && this.pots.length > 0) {
+            totalPotAmount = this.pots.reduce((sum, p) => sum + p.amount, 0);
+            // Add any current round bets that might not be in pots yet? 
+            // No, handleShowdown is called after completeBettingRound usually?
+            // Wait, handleShowdown is called explicitly by Host.
+            // If called after completeBettingRound, pots are populated.
+        }
+        
+        // Just use this.pot as it tracks the total
+        this.players[participatingPlayers[0].socketId].balance += this.pot;
+        
         this.io.emit('gameOver', {
             message: `${participatingPlayers[0].name} gewinnt den Pot, da alle anderen gepasst haben!`,
             winner: participatingPlayers[0].name,
@@ -1225,48 +1333,81 @@ class Game {
             correctAnswer: this.correctAnswer,
             gameState: this.getGameStateSnapshot() // Snapshot after pot awarded
         });
+        
+        this.pot = 0;
+        this.pots = [];
+        
         this.resetForNextRound();
         return true;
     }
 
     // Determine winner(s) based on answers
-    let winners = [];
-    let closestDiff = Infinity;
+    // Iterate through all pots (Main + Side Pots)
+    let potDistribution = {};
+    let allWinners = []; // Track all unique winners for announcement
 
-    participatingPlayers.forEach(player => {
-        const answerVal = parseFloat(player.finalAnswer);
-        if (isNaN(answerVal)) {
-            player.accuracy = Infinity; // Invalid answers are furthest
+    // If no pots defined (legacy/fallback), treat 'this.pot' as main pot
+    if (!this.pots || this.pots.length === 0) {
+        this.pots = [{ amount: this.pot, eligiblePlayers: participatingPlayers.map(p => p.socketId) }];
+    }
+
+    this.pots.forEach((pot, index) => {
+        if (pot.amount <= 0) return;
+
+        // Find eligible players for this pot who are still active (not folded)
+        // Note: participatingPlayers already filters out folded players.
+        // We just need to intersect participatingPlayers with pot.eligiblePlayers
+        const eligibleForPot = participatingPlayers.filter(p => pot.eligiblePlayers.includes(p.socketId));
+
+        if (eligibleForPot.length === 0) {
+            // Should not happen if logic is correct, but if so, money stays? or goes to next pot?
+            // Or goes to random? Let's log error.
+            logError(new Error(`No eligible players for pot ${index}`), { pot });
             return;
         }
-        player.accuracy = Math.abs(answerVal - this.correctAnswer);
-        if (player.accuracy < closestDiff) {
-            closestDiff = player.accuracy;
-            winners = [player];
-        } else if (player.accuracy === closestDiff) {
-            winners.push(player);
+
+        let winners = [];
+        let closestDiff = Infinity;
+
+        eligibleForPot.forEach(player => {
+            const answerVal = parseFloat(player.finalAnswer);
+            if (isNaN(answerVal)) {
+                player.accuracy = Infinity; 
+                return;
+            }
+            player.accuracy = Math.abs(answerVal - this.correctAnswer);
+            if (player.accuracy < closestDiff) {
+                closestDiff = player.accuracy;
+                winners = [player];
+            } else if (player.accuracy === closestDiff) {
+                winners.push(player);
+            }
+        });
+
+        if (winners.length > 0) {
+            const potPerWinner = Math.floor(pot.amount / winners.length);
+            winners.forEach(winner => {
+                this.players[winner.socketId].balance += potPerWinner;
+                potDistribution[winner.name] = (potDistribution[winner.name] || 0) + potPerWinner;
+                if (!allWinners.find(w => w.socketId === winner.socketId)) {
+                    allWinners.push(winner);
+                }
+            });
+            const remainder = pot.amount % winners.length;
+            if (remainder > 0) { 
+                this.players[winners[0].socketId].balance += remainder;
+                potDistribution[winners[0].name] = (potDistribution[winners[0].name] || 0) + remainder;
+            }
         }
     });
 
-    let potDistribution = {};
-    if (winners.length > 0) {
-        const potPerWinner = Math.floor(this.pot / winners.length);
-        winners.forEach(winner => {
-            this.players[winner.socketId].balance += potPerWinner;
-            potDistribution[winner.name] = potPerWinner;
-        });
-        const remainder = this.pot % winners.length;
-        if (remainder > 0 && winners.length > 0) { // Distribute remainder to first winner
-            this.players[winners[0].socketId].balance += remainder;
-            potDistribution[winners[0].name] += remainder;
-        }
-        this.pot = 0;
-    }
+    this.pot = 0; // Reset total pot display
+    this.pots = []; // Reset pots
 
-    logGameEvent('SHOWDOWN_COMPLETED', { winners: winners.map(w=>w.name), potDistribution, correctAnswer: this.correctAnswer });
+    logGameEvent('SHOWDOWN_COMPLETED', { winners: allWinners.map(w=>w.name), potDistribution, correctAnswer: this.correctAnswer });
 
     this.io.emit('showdownResults', {
-        winners: winners.map(w => ({ name: w.name, finalAnswer: w.finalAnswer, accuracy: w.accuracy })),
+        winners: allWinners.map(w => ({ name: w.name, finalAnswer: w.finalAnswer, accuracy: w.accuracy })),
         potDistribution,
         correctAnswer: this.correctAnswer,
         finalAnswers: this.getFinalAnswersForShowdown(),
