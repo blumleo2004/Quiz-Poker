@@ -156,6 +156,7 @@ const ui = {
     questionDisplay: document.getElementById('question-display'),
     questionText: document.getElementById('question-text'),
     hintsDisplay: document.getElementById('hints-display'),
+    answerDisplay: document.getElementById('answer-display'), // New element
     seatsContainer: document.getElementById('seats-container'),
 
     // Controls
@@ -429,10 +430,14 @@ socket.on('activePlayerChanged', (data) => {
 socket.on('nextRoundReady', (data) => {
     showToast('Next Round Starting...', 'info');
     
-    // Clear hints display when starting a new round
+    // Clear hints and answer display when starting a new round
     if (ui.hintsDisplay) {
         ui.hintsDisplay.innerHTML = '';
         ui.hintsDisplay.classList.add('hidden');
+    }
+    if (ui.answerDisplay) {
+        ui.answerDisplay.innerHTML = '';
+        ui.answerDisplay.classList.add('hidden');
     }
     
     if (data.gameState) {
@@ -453,9 +458,22 @@ socket.on('gameStarted', (data) => {
         if (revealedAnswer) revealedAnswer.remove();
     }
     
+    // Clear hints and answer display
+    if (ui.hintsDisplay) {
+        ui.hintsDisplay.innerHTML = '';
+        ui.hintsDisplay.classList.add('hidden');
+    }
+    if (ui.answerDisplay) {
+        ui.answerDisplay.innerHTML = '';
+        ui.answerDisplay.classList.add('hidden');
+    }
+    
     if (data.question) {
         showQuestion(data.question);
+    } else {
+        console.warn('Game Started event received but no question data provided.');
     }
+
     // Update gameState from the event data
     if (data.gameState) {
         gameState = data.gameState;
@@ -534,7 +552,10 @@ socket.on('hintRevealed', (data) => {
     // Add hint item with better styling
     const hintItem = document.createElement('div');
     hintItem.className = 'hint-item';
-    hintItem.textContent = data.hint;
+    hintItem.innerHTML = `
+        <span class="hint-label">Hint ${data.hintsRemaining !== undefined ? (3 - data.hintsRemaining) : ''}</span>
+        <div class="hint-text">${data.hint}</div>
+    `;
     hintBox.appendChild(hintItem);
     
     if (data.gameState) {
@@ -558,14 +579,15 @@ socket.on('enableRevealAnswerButton', (data) => {
 socket.on('answerRevealed', (data) => {
     showToast(data.message, 'warning');
     
-    // Show the answer in the hints display (as requested)
-    const hintBox = ui.hintsDisplay;
-    hintBox.classList.remove('hidden');
-
-    const answerItem = document.createElement('div');
-    answerItem.className = 'hint-item answer-reveal';
-    answerItem.innerHTML = `<strong>Correct Answer:</strong> ${data.answer}`;
-    hintBox.appendChild(answerItem);
+    // Show the answer in the answer display
+    const answerBox = ui.answerDisplay;
+    if (answerBox) {
+        answerBox.classList.remove('hidden');
+        answerBox.innerHTML = `
+            <span class="answer-label">Correct Answer</span>
+            <div class="answer-text">${data.answer}</div>
+        `;
+    }
     
     if (data.gameState) {
         gameState = data.gameState;
@@ -657,6 +679,10 @@ socket.on('gameReset', (data) => {
     if (ui.hintsDisplay) {
         ui.hintsDisplay.innerHTML = '';
         ui.hintsDisplay.classList.add('hidden');
+    }
+    if (ui.answerDisplay) {
+        ui.answerDisplay.innerHTML = '';
+        ui.answerDisplay.classList.add('hidden');
     }
     
     // Clear answer status
@@ -856,10 +882,13 @@ function renderGameState() {
         ui.hintsDisplay.classList.remove('hidden');
         // Clear and rebuild to avoid duplicates and ensure correct state
         ui.hintsDisplay.innerHTML = '';
-        gameState.revealedHints.forEach(hint => {
+        gameState.revealedHints.forEach((hint, index) => {
             const hintItem = document.createElement('div');
             hintItem.className = 'hint-item';
-            hintItem.textContent = hint;
+            hintItem.innerHTML = `
+                <span class="hint-label">Hint ${index + 1}</span>
+                <div class="hint-text">${hint}</div>
+            `;
             ui.hintsDisplay.appendChild(hintItem);
         });
     } else if (gameState.state && gameState.state.includes('HINT_')) {
@@ -874,6 +903,22 @@ function renderGameState() {
         if (gameState.state === 'WAITING' || gameState.state === 'ANSWERING' || !gameState.revealedHints || gameState.revealedHints.length === 0) {
             ui.hintsDisplay.classList.add('hidden');
             ui.hintsDisplay.innerHTML = '';
+        }
+    }
+
+    // Show correct answer if available (Showdown or Answer Reveal)
+    if (gameState.correctAnswer && (gameState.state === 'ANSWER_REVEAL' || gameState.state === 'SHOWDOWN')) {
+        if (ui.answerDisplay) {
+            ui.answerDisplay.classList.remove('hidden');
+            ui.answerDisplay.innerHTML = `
+                <span class="answer-label">Correct Answer</span>
+                <div class="answer-text">${gameState.correctAnswer}</div>
+            `;
+        }
+    } else {
+        if (ui.answerDisplay) {
+            ui.answerDisplay.classList.add('hidden');
+            ui.answerDisplay.innerHTML = '';
         }
     }
     

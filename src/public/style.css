@@ -590,3 +590,67 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+/* Hints & Answer Display */
+.hints-box {
+  width: 100%;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hint-item {
+  background: rgba(255, 204, 0, 0.1);
+  border: 2px solid var(--accent-warning);
+  border-radius: 12px;
+  padding: 15px;
+  position: relative;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-align: left;
+}
+
+.hint-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--accent-warning);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+
+.hint-text {
+  font-size: 1rem;
+  color: #fff;
+  line-height: 1.4;
+}
+
+.answer-box {
+  width: 100%;
+  margin-top: 1.5rem;
+  background: rgba(0, 255, 135, 0.15);
+  border: 2px solid var(--accent-success);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 20px rgba(0, 255, 135, 0.2);
+}
+
+.answer-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--accent-success);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.answer-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
