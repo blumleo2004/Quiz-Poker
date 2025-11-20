@@ -258,7 +258,7 @@ class Game {
   }
 
   // Wrap methods that change critical game state with _saveGameToDB()
-  async addPlayer(socketId, name, role) {
+  async addPlayer(socketId, name, role, avatarSeed) {
     if (this.players[socketId]) {
       logError(new Error(`Player with socketId ${socketId} already exists.`));
       return this.players[socketId]; // Spieler existiert bereits
@@ -274,6 +274,7 @@ class Game {
         name: name,
         role: role,
         socketId: socketId,
+        avatarSeed: avatarSeed || name, // Use name as fallback seed
         // Host-spezifische Eigenschaften
       };
       logGameEvent('HOST_JOINED', { socketId, name });
@@ -289,6 +290,7 @@ class Game {
         ...existingPlayerByName, // Übernehme alte Daten
         socketId: socketId,     // Aktualisiere Socket-ID
         isActive: true,         // Setze wieder aktiv
+        avatarSeed: avatarSeed || existingPlayerByName.avatarSeed || name // Update avatar if provided
       };
       delete this.players[oldSocketId];
 
@@ -311,6 +313,7 @@ class Game {
       isActive: true,
       hasFolded: false,
       socketId: socketId,
+      avatarSeed: avatarSeed || name // Store avatar seed
     };
     if (role === 'player') {
       this.playerOrder.push(socketId);
@@ -1222,6 +1225,7 @@ class Game {
             socketId: p.socketId, // Also include socketId for frontend compatibility
             name: p.name,
             role: p.role, // Include role for filtering
+            avatarSeed: p.avatarSeed || p.name, // Include avatar seed
             balance: p.balance || 1000, // Changed from 'chips' to 'balance' to match player object, default to 1000
             score: this.playerScores[p.socketId] || 0, // Use p.socketId for scores
             isDealer: this.playerOrder[this.dealerPosition] === p.socketId,

@@ -22,6 +22,8 @@ let myPlayer = {
     balance: 0
 };
 
+let currentAvatarSeed = localStorage.getItem('qp_avatar_seed') || Math.random().toString(36).substring(7);
+
 // --- Audio & FX System ---
 class SoundManager {
     constructor() {
@@ -185,6 +187,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (myPlayer.name) {
         ui.playerNameInput.value = myPlayer.name;
     }
+
+    // Avatar Customization
+    const avatarPreviewImg = document.getElementById('avatarPreviewImg');
+    const randomizeAvatarBtn = document.getElementById('randomizeAvatarBtn');
+
+    function updateAvatarPreview() {
+        if (avatarPreviewImg) {
+            avatarPreviewImg.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentAvatarSeed}&backgroundColor=b6e3f4`;
+        }
+    }
+
+    if (randomizeAvatarBtn) {
+        randomizeAvatarBtn.addEventListener('click', () => {
+            currentAvatarSeed = Math.random().toString(36).substring(7);
+            localStorage.setItem('qp_avatar_seed', currentAvatarSeed);
+            updateAvatarPreview();
+        });
+    }
+    
+    // Initial preview update
+    updateAvatarPreview();
 
     // Event Listeners
     ui.joinGameBtn.addEventListener('click', () => attemptJoin('player'));
@@ -599,7 +622,7 @@ function attemptJoin(role) {
         return;
     }
 
-    socket.emit('joinGame', { name, role });
+    socket.emit('joinGame', { name, role, avatarSeed: currentAvatarSeed });
 }
 
 function submitAnswer() {
@@ -786,10 +809,13 @@ function renderSeats() {
             ? `<div class="player-revealed-answer">Answer: ${player.finalAnswer}</div>` 
             : '';
 
+        // Use avatarSeed if available, fallback to name
+        const avatarSeed = player.avatarSeed || player.name;
+
         seatEl.innerHTML = `
             ${isActive ? '<div class="active-indicator">▶</div>' : ''}
             <div class="player-avatar">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${player.name}&backgroundColor=b6e3f4" alt="Avatar">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}&backgroundColor=b6e3f4" alt="Avatar">
             </div>
             <div class="player-name">${player.name}</div>
             <div class="player-chips">🪙 ${balance}</div>

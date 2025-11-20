@@ -194,7 +194,7 @@ io.on('connection', (socket) => {
 
     if (data.role === 'player') {
       try {
-        const player = game.addPlayer(socket.id, data.name, data.role);
+        const player = game.addPlayer(socket.id, data.name, data.role, data.avatarSeed);
         if (player) {
           console.log(`Spieler ${data.name} (${socket.id}) ist beigetreten oder hat sich neu verbunden.`);
           
