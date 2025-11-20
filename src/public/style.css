@@ -310,7 +310,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem; /* Reduced padding */
+  padding: 0.5rem; /* Reduced padding */
   perspective: 1000px;
   overflow: hidden; /* Prevent scrollbars if seats go slightly out */
 }
@@ -332,6 +332,7 @@ body {
   align-items: center;
   transform: rotateX(15deg); /* Increased tilt slightly */
   transition: transform 0.5s ease;
+  margin-bottom: 2rem; /* Lift table slightly */
 }
 
 .table-center-content {
