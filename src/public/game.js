@@ -22,7 +22,7 @@ let myPlayer = {
     balance: 0
 };
 
-let currentAvatarSeed = localStorage.getItem('qp_avatar_seed') || Math.random().toString(36).substring(7);
+let currentAvatarSeed = localStorage.getItem('qp_avatar_seed') || Math.random().toString(36).substring(7;
 
 // --- Audio & FX System ---
 class SoundManager {
@@ -147,6 +147,7 @@ const ui = {
     // Game Header
     roomId: document.getElementById('roomId'),
     phaseDisplay: document.getElementById('phase-display'),
+    minBetDisplay: document.getElementById('minBetDisplay'),
     myPlayerNameDisplay: document.getElementById('myPlayerNameDisplay'),
     myPlayerChipsDisplay: document.getElementById('myPlayerChipsDisplay'),
 
@@ -800,6 +801,9 @@ function renderGameState() {
     if (gameState.state) {
         ui.phaseDisplay.textContent = gameState.state;
     }
+    if (gameState.minimumRaise) {
+        ui.minBetDisplay.textContent = gameState.minimumRaise;
+    }
     if (gameState.pot !== undefined) {
         ui.potAmount.textContent = gameState.pot;
     }
@@ -1103,3 +1107,12 @@ function updateAnswerStatus() {
         ui.answerStatusList.appendChild(statusItem);
     });
 }
+
+// New socket event listener for blinds increased
+socket.on('blindsIncreased', (data) => {
+    showToast(data.message, 'warning');
+    audio.playTurn(); // Use a sound to alert
+    if (data.newMinBet) {
+        ui.minBetDisplay.textContent = data.newMinBet;
+    }
+});

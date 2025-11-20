@@ -554,7 +554,17 @@ class Game {
     this.state = GameState[`BETTING_ROUND_${roundNumber}`];
     this.bettingRound = roundNumber;
     this.currentBet = 0; // Der höchste Einsatz in DIESER Runde wird zurückgesetzt
-    this.minimumRaise = 20; // Oder basierend auf Big Blind etc.
+    
+    // Calculate Minimum Bet based on Round Number (Tournament Mode)
+    // Increases every 3 rounds
+    const baseMinBet = 20;
+    const increaseInterval = 3;
+    // roundNumber is the game round (question number), but here 'roundNumber' arg is betting round (1-4).
+    // We need this.roundNumber (the question count).
+    // Ensure this.roundNumber is at least 1
+    const currentQuestionRound = Math.max(1, this.roundNumber);
+    const multiplier = Math.pow(2, Math.floor((currentQuestionRound - 1) / increaseInterval));
+    this.minimumRaise = baseMinBet * multiplier;
     
     this.getActivePlayers().forEach(p => p.currentBetInRound = 0); // Einsätze pro Runde zurücksetzen
 
@@ -1204,7 +1214,20 @@ class Game {
     });
 
     this.roundNumber++; // Increment round number
-    // Consider logic for increasing blinds based on roundNumber if desired
+    
+    // Check if blinds just increased
+    const baseMinBet = 20;
+    const increaseInterval = 3;
+    const prevMultiplier = Math.pow(2, Math.floor((this.roundNumber - 2) / increaseInterval));
+    const newMultiplier = Math.pow(2, Math.floor((this.roundNumber - 1) / increaseInterval));
+    
+    if (newMultiplier > prevMultiplier) {
+        const newMinBet = baseMinBet * newMultiplier;
+        this.io.emit('blindsIncreased', { 
+            message: `⚠️ Blinds Increased! Minimum bet is now ${newMinBet}.`,
+            newMinBet 
+        });
+    }
 
     logGameEvent('GAME_RESET_FOR_NEXT_ROUND', { roundNumber: this.roundNumber });
     this.io.emit('nextRoundReady', { gameState: this.getGameStateSnapshot() });
