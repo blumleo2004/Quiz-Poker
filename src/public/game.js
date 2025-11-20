@@ -22,7 +22,7 @@ let myPlayer = {
     balance: 0
 };
 
-let currentAvatarSeed = localStorage.getItem('qp_avatar_seed') || Math.random().toString(36).substring(7;
+let currentAvatarSeed = localStorage.getItem('qp_avatar_seed') || Math.random().toString(36).substring(7);
 
 // --- Audio & FX System ---
 class SoundManager {
