@@ -588,7 +588,7 @@ socket.on('answerRevealed', (data) => {
     if (answerBox) {
         answerBox.classList.remove('hidden');
         answerBox.innerHTML = `
-            <span class="answer-label">ANSWER:</span>
+            <span class="answer-label">ANSWER</span>
             <div class="answer-text">${data.answer}</div>
         `;
     }
@@ -918,7 +918,7 @@ function renderGameState() {
         if (ui.answerDisplay) {
             ui.answerDisplay.classList.remove('hidden');
             ui.answerDisplay.innerHTML = `
-                <span class="answer-label">ANSWER:</span>
+                <span class="answer-label">ANSWER</span>
                 <div class="answer-text">${gameState.correctAnswer}</div>
             `;
         }
