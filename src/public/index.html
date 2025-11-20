@@ -106,19 +106,33 @@
       <footer class="game-controls-bar">
         <!-- Player Controls -->
         <div id="player-controls" class="controls-group hidden">
-          <div class="betting-inputs">
-            <input type="number" id="betInput" placeholder="Amount" min="0">
-            <div class="quick-bets">
-              <button class="btn-chip" data-amount="min">Min</button>
-              <button class="btn-chip" data-amount="half">1/2 Pot</button>
-              <button class="btn-chip" data-amount="pot">Pot</button>
-              <button class="btn-chip all-in" data-action="all-in">ALL IN</button>
+          <div class="betting-interface">
+            <div class="chip-rack">
+              <button class="poker-chip chip-min" data-amount="min">
+                <span class="chip-value">MIN</span>
+              </button>
+              <button class="poker-chip chip-half" data-amount="half">
+                <span class="chip-value">1/2</span>
+              </button>
+              <button class="poker-chip chip-pot" data-amount="pot">
+                <span class="chip-value">POT</span>
+              </button>
+              <button class="poker-chip chip-allin" data-action="all-in">
+                <span class="chip-value">ALL IN</span>
+              </button>
             </div>
-          </div>
-          <div class="action-buttons-row">
-            <button id="foldBtn" class="btn btn-danger">Fold</button>
-            <button id="callBtn" class="btn btn-neutral">Call</button>
-            <button id="raiseBtn" class="btn btn-success">Raise</button>
+            
+            <div class="bet-input-container">
+               <button id="decreaseBetBtn" class="btn-adjust">-</button>
+               <input type="number" id="betInput" placeholder="0" min="0">
+               <button id="increaseBetBtn" class="btn-adjust">+</button>
+            </div>
+
+            <div class="action-buttons-row">
+              <button id="foldBtn" class="btn btn-danger btn-lg">FOLD</button>
+              <button id="callBtn" class="btn btn-neutral btn-lg">CHECK/CALL</button>
+              <button id="raiseBtn" class="btn btn-success btn-lg">RAISE</button>
+            </div>
           </div>
         </div>
 
@@ -139,6 +153,15 @@
           <button id="resetRoundBtn" class="btn btn-warning">Reset Round</button>
           <button id="resetGameBtn" class="btn btn-danger">Reset Game</button>
           <button id="managePlayersBtn" class="btn btn-info">Manage Players</button>
+          
+          <div class="host-toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="blindsToggle" checked>
+              <span class="slider round"></span>
+            </label>
+            <span class="toggle-label">Rising Blinds</span>
+          </div>
+
           <div id="host-info" class="host-info">Questions: <span id="questionsCount">...</span></div>
           <div id="answer-status" class="answer-status hidden">
             <div class="answer-status-title">Answer Status</div>

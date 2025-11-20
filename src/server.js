@@ -496,6 +496,15 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Host toggles blinds
+  socket.on('toggleBlinds', async (data) => {
+    try {
+        await game.toggleBlinds(socket.id, data.enabled);
+    } catch (error) {
+        logError(error, { context: 'toggleBlinds event handler', socketId: socket.id });
+    }
+  });
+
   // Spieler verlässt das Spiel / Verbindung wird getrennt
   socket.on('disconnect', () => {
     logGameEvent('PLAYER_DISCONNECTED', { socketId: socket.id });

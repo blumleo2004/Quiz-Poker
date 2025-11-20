@@ -43,6 +43,7 @@ class Game {
     this.actionHistory = [];
     this.gameLog = [];
     this.playerScores = {}; // socket.id -> score
+    this.blindsEnabled = true; // Default to true (Tournament Mode active)
 
     this._loadGameFromDB().catch(err => logError(err, { context: 'Game Constructor - _loadGameFromDB' }));
   }
@@ -558,13 +559,18 @@ class Game {
     // Calculate Minimum Bet based on Round Number (Tournament Mode)
     // Increases every 3 rounds
     const baseMinBet = 20;
-    const increaseInterval = 3;
-    // roundNumber is the game round (question number), but here 'roundNumber' arg is betting round (1-4).
-    // We need this.roundNumber (the question count).
-    // Ensure this.roundNumber is at least 1
-    const currentQuestionRound = Math.max(1, this.roundNumber);
-    const multiplier = Math.pow(2, Math.floor((currentQuestionRound - 1) / increaseInterval));
-    this.minimumRaise = baseMinBet * multiplier;
+    
+    if (this.blindsEnabled) {
+        const increaseInterval = 3;
+        // roundNumber is the game round (question number), but here 'roundNumber' arg is betting round (1-4).
+        // We need this.roundNumber (the question count).
+        // Ensure this.roundNumber is at least 1
+        const currentQuestionRound = Math.max(1, this.roundNumber);
+        const multiplier = Math.pow(2, Math.floor((currentQuestionRound - 1) / increaseInterval));
+        this.minimumRaise = baseMinBet * multiplier;
+    } else {
+        this.minimumRaise = baseMinBet;
+    }
     
     this.getActivePlayers().forEach(p => p.currentBetInRound = 0); // Einsätze pro Runde zurücksetzen
 
@@ -1216,17 +1222,19 @@ class Game {
     this.roundNumber++; // Increment round number
     
     // Check if blinds just increased
-    const baseMinBet = 20;
-    const increaseInterval = 3;
-    const prevMultiplier = Math.pow(2, Math.floor((this.roundNumber - 2) / increaseInterval));
-    const newMultiplier = Math.pow(2, Math.floor((this.roundNumber - 1) / increaseInterval));
-    
-    if (newMultiplier > prevMultiplier) {
-        const newMinBet = baseMinBet * newMultiplier;
-        this.io.emit('blindsIncreased', { 
-            message: `⚠️ Blinds Increased! Minimum bet is now ${newMinBet}.`,
-            newMinBet 
-        });
+    if (this.blindsEnabled) {
+        const baseMinBet = 20;
+        const increaseInterval = 3;
+        const prevMultiplier = Math.pow(2, Math.floor((this.roundNumber - 2) / increaseInterval));
+        const newMultiplier = Math.pow(2, Math.floor((this.roundNumber - 1) / increaseInterval));
+        
+        if (newMultiplier > prevMultiplier) {
+            const newMinBet = baseMinBet * newMultiplier;
+            this.io.emit('blindsIncreased', { 
+                message: `⚠️ Blinds Increased! Minimum bet is now ${newMinBet}.`,
+                newMinBet 
+            });
+        }
     }
 
     logGameEvent('GAME_RESET_FOR_NEXT_ROUND', { roundNumber: this.roundNumber });
@@ -1280,6 +1288,7 @@ class Game {
         activePlayerSocketId: this.activePlayerSocketId, // Socket ID of current player (for frontend)
         roundNumber: this.roundNumber,
         bettingRound: this.bettingRound, // Current betting sub-round (1, 2, 3)
+        blindsEnabled: this.blindsEnabled, // Include blinds state
         // communityCards: this.communityCards, // If you add poker hand evaluation
         actionHistory: this.actionHistory.slice(-10), 
         gameLog: this.gameLog.slice(-5),
@@ -1432,6 +1441,23 @@ class Game {
     });
     
     this.io.emit('gameStateUpdate', this.getGameStateSnapshot());
+    await this._saveGameToDB();
+    return true;
+  }
+
+  async toggleBlinds(hostSocketId, enabled) {
+    if (hostSocketId !== this.hostSocketId) {
+        return false;
+    }
+    this.blindsEnabled = enabled;
+    logGameEvent('BLINDS_TOGGLED', { enabled });
+    
+    // If disabled, reset min bet immediately for next round logic
+    if (!enabled) {
+        this.minimumRaise = 20;
+    }
+    
+    this.io.emit('blindsStateChanged', { enabled, minimumRaise: this.minimumRaise });
     await this._saveGameToDB();
     return true;
   }

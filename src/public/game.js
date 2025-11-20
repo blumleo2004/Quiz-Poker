@@ -277,10 +277,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Quick Bet Buttons
-    document.querySelectorAll('.btn-chip').forEach(btn => {
+    document.querySelectorAll('.poker-chip').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const type = e.target.dataset.amount;
-            const action = e.target.dataset.action;
+            // Handle click on span inside button
+            const target = e.target.closest('.poker-chip');
+            const type = target.dataset.amount;
+            const action = target.dataset.action;
             handleQuickBet(type, action);
         });
     });
@@ -333,6 +335,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === playerManagementModal) {
                 playerManagementModal.classList.add('hidden');
             }
+        });
+    }
+
+    // Blinds Toggle
+    const blindsToggle = document.getElementById('blindsToggle');
+    if (blindsToggle) {
+        blindsToggle.addEventListener('change', (e) => {
+            socket.emit('toggleBlinds', { enabled: e.target.checked });
+        });
+    }
+
+    // Bet Adjustment Buttons
+    const decreaseBetBtn = document.getElementById('decreaseBetBtn');
+    const increaseBetBtn = document.getElementById('increaseBetBtn');
+    
+    if (decreaseBetBtn) {
+        decreaseBetBtn.addEventListener('click', () => {
+            let current = parseInt(ui.betInput.value) || 0;
+            ui.betInput.value = Math.max(0, current - 10);
+        });
+    }
+    
+    if (increaseBetBtn) {
+        increaseBetBtn.addEventListener('click', () => {
+            let current = parseInt(ui.betInput.value) || 0;
+            ui.betInput.value = current + 10;
         });
     }
 });
@@ -769,7 +797,8 @@ function handleQuickBet(type, action) {
         
         if (meObj) ui.betInput.value = meObj.balance;
     } else if (type === 'min') {
-        ui.betInput.value = gameState.minBet || 20;
+        // Use the current minimum raise from game state
+        ui.betInput.value = gameState.minimumRaise || 20;
     } else if (type === 'half') {
         ui.betInput.value = Math.floor(gameState.pot / 2);
     } else if (type === 'pot') {
@@ -1115,4 +1144,15 @@ socket.on('blindsIncreased', (data) => {
     if (data.newMinBet) {
         ui.minBetDisplay.textContent = data.newMinBet;
     }
+});
+
+socket.on('blindsStateChanged', (data) => {
+    const blindsToggle = document.getElementById('blindsToggle');
+    if (blindsToggle) {
+        blindsToggle.checked = data.enabled;
+    }
+    if (data.minimumRaise) {
+        ui.minBetDisplay.textContent = data.minimumRaise;
+    }
+    showToast(`Blinds ${data.enabled ? 'Enabled' : 'Disabled'}`, 'info');
 });
