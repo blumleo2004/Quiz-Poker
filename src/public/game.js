@@ -1216,6 +1216,14 @@ socket.on('blindsIncreased', (data) => {
     }
 });
 
+socket.on('blindsPosted', (data) => {
+    showToast(`Blinds Posted: SB ${data.sbPlayer} (${data.sbAmount}), BB ${data.bbPlayer} (${data.bbAmount})`, 'info');
+    audio.playChip();
+    if (data.pot) {
+        ui.potAmount.textContent = data.pot;
+    }
+});
+
 socket.on('blindsStateChanged', (data) => {
     const blindsToggle = document.getElementById('blindsToggle');
     if (blindsToggle) {

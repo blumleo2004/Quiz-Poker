@@ -24,7 +24,7 @@ jest.mock('../src/models/GameSession', () => {
 });
 
 // Now require Game after mocks are set up
-const Game = require('../src/game/Game');
+const { Game } = require('../src/game/Game');
 
 describe('Game Class - Core Logic Tests', () => {
     let game;

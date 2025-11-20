@@ -568,24 +568,116 @@ class Game {
         const currentQuestionRound = Math.max(1, this.roundNumber);
         const multiplier = Math.pow(2, Math.floor((currentQuestionRound - 1) / increaseInterval));
         this.minimumRaise = baseMinBet * multiplier;
+        this.bigBlind = this.minimumRaise;
+        this.smallBlind = Math.floor(this.minimumRaise / 2);
     } else {
         this.minimumRaise = baseMinBet;
     }
     
     this.getActivePlayers().forEach(p => p.currentBetInRound = 0); // Einsätze pro Runde zurücksetzen
 
-    // Finde den ersten aktiven Spieler für die Runde
-    // Dies könnte z.B. der Spieler links vom Dealer sein
     let firstPlayerId = null;
-    if (this.playerOrder.length > 0) {
-        // Einfache Logik: erster Spieler in der Order, der aktiv ist
-        for (const playerId of this.playerOrder) {
-            const p = this.players[playerId];
+
+    // Helper to find next active player index
+    const getNextActiveIndex = (startIndex, includeAllIn = false) => {
+        if (this.playerOrder.length === 0) return -1;
+        let idx = (startIndex + 1) % this.playerOrder.length;
+        let attempts = 0;
+        while (attempts < this.playerOrder.length) {
+            const pid = this.playerOrder[idx];
+            const p = this.players[pid];
             if (p && p.isActive && !p.hasFolded && p.role === 'player') {
-                firstPlayerId = playerId;
-                break;
+                 if (includeAllIn || (!p.isAllIn && p.balance > 0)) {
+                     return idx;
+                 }
             }
+            idx = (idx + 1) % this.playerOrder.length;
+            attempts++;
         }
+        return -1;
+    };
+
+    if (roundNumber === 1 && this.blindsEnabled && this.playerOrder.length >= 2) {
+        const activeCount = this.getActivePlayers().length;
+        let sbIndex = -1;
+        let bbIndex = -1;
+        
+        // Determine SB and BB
+        if (activeCount === 2) {
+             // Heads-up: Dealer is SB
+             const dealerPid = this.playerOrder[this.dealerPosition];
+             const dealerP = this.players[dealerPid];
+             if (dealerP && dealerP.isActive && !dealerP.hasFolded && dealerP.balance > 0) {
+                 sbIndex = this.dealerPosition;
+             } else {
+                 sbIndex = getNextActiveIndex(this.dealerPosition, true);
+             }
+             bbIndex = getNextActiveIndex(sbIndex, true);
+        } else {
+             // Normal: SB is next after Dealer
+             sbIndex = getNextActiveIndex(this.dealerPosition, true);
+             if (sbIndex !== -1) {
+                 bbIndex = getNextActiveIndex(sbIndex, true);
+             }
+        }
+
+        if (sbIndex !== -1 && bbIndex !== -1) {
+            const sbPlayerId = this.playerOrder[sbIndex];
+            const bbPlayerId = this.playerOrder[bbIndex];
+            const sbPlayer = this.players[sbPlayerId];
+            const bbPlayer = this.players[bbPlayerId];
+
+            // Post SB
+            let sbAmount = this.smallBlind;
+            if (sbPlayer.balance < sbAmount) {
+                sbAmount = sbPlayer.balance;
+                sbPlayer.isAllIn = true;
+            }
+            sbPlayer.balance -= sbAmount;
+            sbPlayer.currentBetInRound = sbAmount;
+            this.pot += sbAmount;
+            logGameEvent('SMALL_BLIND_POSTED', { player: sbPlayer.name, amount: sbAmount });
+
+            // Post BB
+            let bbAmount = this.bigBlind;
+            if (bbPlayer.balance < bbAmount) {
+                bbAmount = bbPlayer.balance;
+                bbPlayer.isAllIn = true;
+            }
+            bbPlayer.balance -= bbAmount;
+            bbPlayer.currentBetInRound = bbAmount;
+            this.pot += bbAmount;
+            logGameEvent('BIG_BLIND_POSTED', { player: bbPlayer.name, amount: bbAmount });
+
+            this.currentBet = this.bigBlind;
+            
+            // UTG starts (player after BB)
+            const utgIndex = getNextActiveIndex(bbIndex, false);
+            if (utgIndex !== -1) {
+                firstPlayerId = this.playerOrder[utgIndex];
+            }
+            
+            this.io.emit('blindsPosted', {
+                sbPlayer: sbPlayer.name,
+                bbPlayer: bbPlayer.name,
+                sbAmount,
+                bbAmount,
+                pot: this.pot
+            });
+        }
+    } else {
+        // Round > 1 or Blinds Disabled
+        // Start with player after Dealer (SB position)
+        const startIdx = getNextActiveIndex(this.dealerPosition, false);
+        if (startIdx !== -1) {
+            firstPlayerId = this.playerOrder[startIdx];
+        }
+    }
+
+    // Fallback
+    if (!firstPlayerId && this.playerOrder.length > 0) {
+        const fallbackIdx = getNextActiveIndex(this.dealerPosition, false);
+        if (fallbackIdx !== -1) firstPlayerId = this.playerOrder[fallbackIdx];
     }
 
     if (firstPlayerId) {
@@ -1220,6 +1312,11 @@ class Game {
     });
 
     this.roundNumber++; // Increment round number
+    
+    // Rotate dealer position
+    if (this.playerOrder.length > 0) {
+        this.dealerPosition = (this.dealerPosition + 1) % this.playerOrder.length;
+    }
     
     // Check if blinds just increased
     if (this.blindsEnabled) {
