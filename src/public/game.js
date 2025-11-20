@@ -435,7 +435,12 @@ socket.on('nextRoundReady', (data) => {
         ui.hintsDisplay.innerHTML = '';
         ui.hintsDisplay.classList.add('hidden');
     }
-    // ui.answerDisplay is deprecated/removed logic
+    
+    // Clear answer display
+    if (ui.answerDisplay) {
+        ui.answerDisplay.innerHTML = '';
+        ui.answerDisplay.classList.add('hidden');
+    }
     
     if (data.gameState) {
         gameState = data.gameState;
@@ -459,6 +464,12 @@ socket.on('gameStarted', (data) => {
     if (ui.hintsDisplay) {
         ui.hintsDisplay.innerHTML = '';
         ui.hintsDisplay.classList.add('hidden');
+    }
+
+    // Clear answer display
+    if (ui.answerDisplay) {
+        ui.answerDisplay.innerHTML = '';
+        ui.answerDisplay.classList.add('hidden');
     }
     
     if (data.question) {
@@ -572,19 +583,14 @@ socket.on('enableRevealAnswerButton', (data) => {
 socket.on('answerRevealed', (data) => {
     showToast(data.message, 'warning');
     
-    // Show the answer as a 3rd hint item
-    const hintBox = ui.hintsDisplay;
-    hintBox.classList.remove('hidden');
-
-    // Check if answer is already displayed to avoid duplicates
-    if (!hintBox.querySelector('.answer-item')) {
-        const answerItem = document.createElement('div');
-        answerItem.className = 'answer-item';
-        answerItem.innerHTML = `
-            <span class="hint-label">ANSWER</span>
-            <div class="hint-text">${data.answer}</div>
+    // Show the answer in its own box
+    const answerBox = ui.answerDisplay;
+    if (answerBox) {
+        answerBox.classList.remove('hidden');
+        answerBox.innerHTML = `
+            <span class="answer-label">ANSWER:</span>
+            <div class="answer-text">${data.answer}</div>
         `;
-        hintBox.appendChild(answerItem);
     }
     
     if (data.gameState) {
@@ -677,6 +683,12 @@ socket.on('gameReset', (data) => {
     if (ui.hintsDisplay) {
         ui.hintsDisplay.innerHTML = '';
         ui.hintsDisplay.classList.add('hidden');
+    }
+
+    // Clear answer display
+    if (ui.answerDisplay) {
+        ui.answerDisplay.innerHTML = '';
+        ui.answerDisplay.classList.add('hidden');
     }
     
     // Clear answer status
@@ -902,18 +914,18 @@ function renderGameState() {
 
     // Show correct answer if available (Showdown or Answer Reveal)
     if (gameState.correctAnswer && (gameState.state === 'ANSWER_REVEAL' || gameState.state === 'SHOWDOWN')) {
-        // Ensure hints display is visible
-        ui.hintsDisplay.classList.remove('hidden');
-        
-        // Check if answer is already displayed
-        if (!ui.hintsDisplay.querySelector('.answer-item')) {
-            const answerItem = document.createElement('div');
-            answerItem.className = 'answer-item';
-            answerItem.innerHTML = `
-                <span class="hint-label">ANSWER</span>
-                <div class="hint-text">${gameState.correctAnswer}</div>
+        if (ui.answerDisplay) {
+            ui.answerDisplay.classList.remove('hidden');
+            ui.answerDisplay.innerHTML = `
+                <span class="answer-label">ANSWER:</span>
+                <div class="answer-text">${gameState.correctAnswer}</div>
             `;
-            ui.hintsDisplay.appendChild(answerItem);
+        }
+    } else {
+        // Hide answer display if not in reveal/showdown state
+        if (ui.answerDisplay) {
+            ui.answerDisplay.classList.add('hidden');
+            ui.answerDisplay.innerHTML = '';
         }
     }
     

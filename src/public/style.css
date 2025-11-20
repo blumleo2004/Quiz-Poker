@@ -628,31 +628,32 @@ input:checked + .slider:before {
 
 .answer-box {
   width: 100%;
-  margin-top: 1.5rem;
-  background: rgba(0, 255, 135, 0.15);
-  border: 2px solid var(--accent-success);
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #ffffff;
   border-radius: 12px;
-  padding: 20px;
-  text-align: center;
+  padding: 15px;
+  text-align: left;
   animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 0 20px rgba(0, 255, 135, 0.2);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 .answer-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  color: var(--accent-success);
+  color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 8px;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  text-shadow: 0 0 5px rgba(255,255,255,0.5);
 }
 
 .answer-text {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #fff;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  line-height: 1.4;
 }
 
 /* Host Controls Grid */
@@ -714,24 +715,4 @@ input:checked + .slider:before {
   width: 20px;
 }
 
-.answer-item {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid #ffffff;
-  border-radius: 12px;
-  padding: 15px;
-  position: relative;
-  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  text-align: left;
-  margin-top: 10px;
-}
-
-.answer-item .hint-label {
-  color: #ffffff;
-  text-shadow: 0 0 5px rgba(255,255,255,0.5);
-}
-
-.answer-item .hint-text {
-  font-weight: 700;
-  font-size: 1.2rem;
-}
 
