@@ -450,7 +450,14 @@ class Game {
 
     let question;
     try {
-      question = await Question.findRandomQuestion();
+      // Try to find a question that is different from the current one
+      const filter = this.currentQuestion ? { _id: { $ne: this.currentQuestion._id } } : {};
+      question = await Question.findRandomQuestion(filter);
+      
+      // Fallback if no other question found (e.g. only 1 question in DB)
+      if (!question) {
+         question = await Question.findRandomQuestion();
+      }
     } catch (dbError) {
       logError(dbError, { context: 'startGame - findRandomQuestion' });
       this.io.to(starterSocketId).emit('errorMessage', "Fehler beim Laden der Frage aus der Datenbank.");

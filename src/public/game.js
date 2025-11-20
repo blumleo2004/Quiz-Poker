@@ -351,6 +351,15 @@ socket.on('nextRoundReady', (data) => {
 socket.on('gameStarted', (data) => {
     showToast('Game Started!', 'success');
     audio.playStart();
+    
+    // Force clear previous state visuals
+    if (ui.questionDisplay) {
+        const winnerAnnounce = ui.questionDisplay.querySelector('.winner-announce');
+        if (winnerAnnounce) winnerAnnounce.remove();
+        const revealedAnswer = ui.questionDisplay.querySelector('.revealed-answer');
+        if (revealedAnswer) revealedAnswer.remove();
+    }
+    
     if (data.question) {
         showQuestion(data.question);
     }
