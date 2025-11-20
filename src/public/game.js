@@ -457,11 +457,14 @@ socket.on('enableRevealAnswerButton', (data) => {
 socket.on('answerRevealed', (data) => {
     showToast(data.message, 'warning');
     
-    // Show the answer in the question display
-    const answerDiv = document.createElement('div');
-    answerDiv.className = 'revealed-answer';
-    answerDiv.innerHTML = `<h3>Correct Answer: ${data.answer}</h3>`;
-    ui.questionDisplay.appendChild(answerDiv);
+    // Show the answer in the hints display (as requested)
+    const hintBox = ui.hintsDisplay;
+    hintBox.classList.remove('hidden');
+
+    const answerItem = document.createElement('div');
+    answerItem.className = 'hint-item answer-reveal';
+    answerItem.innerHTML = `<strong>Correct Answer:</strong> ${data.answer}`;
+    hintBox.appendChild(answerItem);
     
     if (data.gameState) {
         gameState = data.gameState;
