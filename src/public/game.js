@@ -22,7 +22,7 @@ let myPlayer = {
     balance: 0
 };
 
-let currentAvatarSeed = localStorage.getItem('qp_avatar_seed') || Math.random().toString(36).substring(7);
+let currentAvatarSeed = localStorage.getItem('qp_avatar_seed') || Math.random().toString(36).substring(7;
 
 // --- Audio & FX System ---
 class SoundManager {
@@ -178,7 +178,12 @@ const ui = {
     nextQuestionBtn: document.getElementById('nextQuestionBtn'), // New button
     skipQuestionBtn: document.getElementById('skipQuestionBtn'), // New button
     answerStatus: document.getElementById('answer-status'),
-    answerStatusList: document.getElementById('answer-status-list')
+    answerStatusList: document.getElementById('answer-status-list'),
+
+    // Player Management
+    managePlayersBtn: document.getElementById('managePlayersBtn'),
+    playerManagementModal: document.getElementById('player-management-modal'),
+    closeManagementBtn: document.getElementById('closeManagementBtn')
 };
 
 // --- Initialization ---
@@ -300,6 +305,32 @@ document.addEventListener('DOMContentLoaded', () => {
         skipQuestionBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to skip this question?')) {
                 socket.emit('skipQuestion');
+            }
+        });
+    }
+
+    const managePlayersBtn = document.getElementById('managePlayersBtn');
+    const playerManagementModal = document.getElementById('player-management-modal');
+    const closeManagementBtn = document.getElementById('closeManagementBtn');
+
+    if (managePlayersBtn) {
+        managePlayersBtn.addEventListener('click', () => {
+            renderPlayerManagementList();
+            playerManagementModal.classList.remove('hidden');
+        });
+    }
+
+    if (closeManagementBtn) {
+        closeManagementBtn.addEventListener('click', () => {
+            playerManagementModal.classList.add('hidden');
+        });
+    }
+
+    // Close modal when clicking outside
+    if (playerManagementModal) {
+        playerManagementModal.addEventListener('click', (e) => {
+            if (e.target === playerManagementModal) {
+                playerManagementModal.classList.add('hidden');
             }
         });
     }
@@ -613,6 +644,74 @@ socket.on('gameReset', (data) => {
     }, 2000);
 });
 
+// --- Player Management ---
+
+socket.on('kicked', (data) => {
+    alert(data.message || 'You have been kicked from the game.');
+    localStorage.removeItem('qp_token');
+    localStorage.removeItem('qp_name');
+    location.reload();
+});
+
+function renderPlayerManagementList() {
+    const listContainer = document.getElementById('management-list');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = '';
+    
+    const playersList = Array.isArray(gameState.players) 
+        ? gameState.players 
+        : Object.values(gameState.players || {});
+        
+    const playerPlayers = playersList.filter(p => p.role === 'player');
+    
+    if (playerPlayers.length === 0) {
+        listContainer.innerHTML = '<div class="text-center text-muted">No players connected.</div>';
+        return;
+    }
+    
+    playerPlayers.forEach(player => {
+        const item = document.createElement('div');
+        item.className = 'management-item';
+        
+        const avatarSeed = player.avatarSeed || player.name;
+        
+        item.innerHTML = `
+            <div class="mgmt-player-info">
+                <div class="player-avatar" style="width: 40px; height: 40px;">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}&backgroundColor=b6e3f4" alt="Avatar">
+                </div>
+                <div>
+                    <div style="font-weight: bold;">${player.name}</div>
+                    <div style="font-size: 0.8rem; color: var(--accent-warning);">🪙 ${player.balance}</div>
+                </div>
+            </div>
+            <div class="mgmt-controls">
+                <button class="btn btn-success btn-xs" onclick="adjustBalance('${player.socketId}', 100)">+100</button>
+                <button class="btn btn-success btn-xs" onclick="adjustBalance('${player.socketId}', 1000)">+1k</button>
+                <button class="btn btn-warning btn-xs" onclick="adjustBalance('${player.socketId}', -100)">-100</button>
+                <button class="btn btn-danger btn-xs" onclick="kickPlayer('${player.socketId}', '${player.name}')">Kick</button>
+            </div>
+        `;
+        listContainer.appendChild(item);
+    });
+}
+
+// Expose functions to global scope for onclick handlers
+window.adjustBalance = (targetId, amount) => {
+    socket.emit('adjustBalance', { targetId, amount });
+    // Optimistic update or wait for state? Wait for state is safer.
+};
+
+window.kickPlayer = (targetId, name) => {
+    if (confirm(`Are you sure you want to kick ${name}?`)) {
+        socket.emit('kickPlayer', { targetId });
+        // Close modal or refresh list? List will refresh on state update if we hook it up
+        // But for now, let's just close it or let the state update handle it
+        // Actually, we should re-render the list when game state updates if the modal is open
+    }
+};
+
 // --- Game Logic Functions ---
 
 function attemptJoin(role) {
@@ -747,6 +846,12 @@ function renderGameState() {
     
     // Update answer status for everyone
     updateAnswerStatus();
+
+    // Update management list if open
+    const playerManagementModal = document.getElementById('player-management-modal');
+    if (playerManagementModal && !playerManagementModal.classList.contains('hidden')) {
+        renderPlayerManagementList();
+    }
 
     if (gameState.activePlayerSocketId) {
         FXManager.highlightTurn(gameState.activePlayerSocketId);

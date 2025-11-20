@@ -1371,6 +1371,47 @@ class Game {
     await this._saveGameToDB();
     return true;
   }
+
+  async kickPlayer(hostSocketId, targetSocketId) {
+    if (hostSocketId !== this.hostSocketId) {
+        this.io.to(hostSocketId).emit('errorMessage', "Nur der Host kann Spieler kicken.");
+        return false;
+    }
+    const player = this.players[targetSocketId];
+    if (!player) return false;
+
+    logGameEvent('PLAYER_KICKED_BY_HOST', { host: this.players[hostSocketId]?.name, target: player.name });
+    
+    // Send specific message to kicked player before removing
+    this.io.to(targetSocketId).emit('kicked', { message: 'Du wurdest vom Host aus dem Spiel entfernt.' });
+    
+    await this.removePlayer(targetSocketId);
+    return true;
+  }
+
+  async adjustPlayerBalance(hostSocketId, targetSocketId, amount) {
+    if (hostSocketId !== this.hostSocketId) {
+        this.io.to(hostSocketId).emit('errorMessage', "Nur der Host kann Guthaben ändern.");
+        return false;
+    }
+    const player = this.players[targetSocketId];
+    if (!player) return false;
+
+    const oldBalance = player.balance;
+    player.balance += amount;
+    
+    logGameEvent('HOST_ADJUSTED_BALANCE', { 
+        host: this.players[hostSocketId]?.name, 
+        target: player.name, 
+        amount, 
+        oldBalance,
+        newBalance: player.balance 
+    });
+    
+    this.io.emit('gameStateUpdate', this.getGameStateSnapshot());
+    await this._saveGameToDB();
+    return true;
+  }
 }
 
 module.exports = { Game, GameState };

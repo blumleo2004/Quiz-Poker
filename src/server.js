@@ -469,6 +469,33 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Host kickt einen Spieler
+  socket.on('kickPlayer', async (data) => {
+    try {
+        logGameEvent('KICK_PLAYER_REQUESTED', { socketId: socket.id, targetId: data.targetId });
+        await game.kickPlayer(socket.id, data.targetId);
+    } catch (error) {
+        socket.emit('errorMessage', "Fehler beim Kicken des Spielers: " + error.message);
+        logError(error, { context: 'kickPlayer event handler', socketId: socket.id });
+    }
+  });
+
+  // Host ändert Guthaben eines Spielers
+  socket.on('adjustBalance', async (data) => {
+    try {
+        const amount = parseInt(data.amount);
+        if (isNaN(amount)) {
+            socket.emit('errorMessage', "Ungültiger Betrag.");
+            return;
+        }
+        logGameEvent('ADJUST_BALANCE_REQUESTED', { socketId: socket.id, targetId: data.targetId, amount });
+        await game.adjustPlayerBalance(socket.id, data.targetId, amount);
+    } catch (error) {
+        socket.emit('errorMessage', "Fehler beim Ändern des Guthabens: " + error.message);
+        logError(error, { context: 'adjustBalance event handler', socketId: socket.id });
+    }
+  });
+
   // Spieler verlässt das Spiel / Verbindung wird getrennt
   socket.on('disconnect', () => {
     logGameEvent('PLAYER_DISCONNECTED', { socketId: socket.id });

@@ -137,6 +137,7 @@
           <button id="skipQuestionBtn" class="btn btn-secondary" disabled>Skip Question</button>
           <button id="resetRoundBtn" class="btn btn-warning">Reset Round</button>
           <button id="resetGameBtn" class="btn btn-danger">Reset Game</button>
+          <button id="managePlayersBtn" class="btn btn-info">Manage Players</button>
           <div id="host-info" class="host-info">Questions: <span id="questionsCount">...</span></div>
           <div id="answer-status" class="answer-status hidden">
             <div class="answer-status-title">Answer Status</div>
@@ -144,6 +145,19 @@
           </div>
         </div>
       </footer>
+
+      <!-- Host Player Management Modal -->
+      <div id="player-management-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+          <div class="modal-header">
+            <h3>Player Management</h3>
+            <button id="closeManagementBtn" class="btn-icon-small">✕</button>
+          </div>
+          <div id="management-list" class="management-list">
+            <!-- Players will be listed here -->
+          </div>
+        </div>
+      </div>
     </section>
 
   </div>
