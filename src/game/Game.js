@@ -1293,7 +1293,7 @@ class Game {
         actionHistory: this.actionHistory.slice(-10), 
         gameLog: this.gameLog.slice(-5),
         minimumRaise: this.minimumRaise,
-        correctAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING) ? this.correctAnswer : undefined, // Show correct answer only at showdown/end
+        correctAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING || this.state === GameState.BETTING_ROUND_4) ? this.correctAnswer : undefined, // Show correct answer only at showdown/end or final betting round
         // roundResults: this.roundResults, // If you have a dedicated round results object
     };
   }
@@ -1305,7 +1305,7 @@ class Game {
     // Example: Hiding other players' final answers unless it's showdown.
     
     // If it's not showdown or game end, and the client is a player, hide other players' final answers.
-    if (this.state !== GameState.SHOWDOWN && this.state !== GameState.WAITING) {
+    if (this.state !== GameState.SHOWDOWN && this.state !== GameState.WAITING && this.state !== GameState.BETTING_ROUND_4) {
         fullState.players.forEach(p => {
             if (p.id !== socketId && !p.isAnswerRevealed) { // Allow if revealed
                 delete p.finalAnswer;
