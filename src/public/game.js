@@ -914,7 +914,7 @@ function renderGameState() {
     }
 
     // Show correct answer if available (Showdown or Answer Reveal)
-    if (gameState.correctAnswer && (gameState.state === 'ANSWER_REVEAL' || gameState.state === 'SHOWDOWN' || gameState.state === 'BETTING_ROUND_4')) {
+    if (gameState.correctAnswer && (gameState.state === 'SHOWDOWN' || gameState.state === 'BETTING_ROUND_4')) {
         if (ui.answerDisplay) {
             ui.answerDisplay.classList.remove('hidden');
             ui.answerDisplay.innerHTML = `
