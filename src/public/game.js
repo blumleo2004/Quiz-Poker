@@ -748,11 +748,18 @@ function renderPlayerManagementList() {
                     <div style="font-size: 0.8rem; color: var(--accent-warning);">🪙 ${player.balance}</div>
                 </div>
             </div>
-            <div class="mgmt-controls">
-                <button class="btn btn-success btn-xs" onclick="adjustBalance('${player.socketId}', 100)">+100</button>
-                <button class="btn btn-success btn-xs" onclick="adjustBalance('${player.socketId}', 1000)">+1k</button>
-                <button class="btn btn-warning btn-xs" onclick="adjustBalance('${player.socketId}', -100)">-100</button>
-                <button class="btn btn-danger btn-xs" onclick="kickPlayer('${player.socketId}', '${player.name}')">Kick</button>
+            <div class="mgmt-controls" style="flex-direction: column; align-items: flex-end; gap: 5px;">
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <input type="number" id="amount-${player.socketId}" placeholder="Amount" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #555; background: #222; color: white; font-size: 0.8rem;">
+                    <button class="btn btn-success btn-xs" onclick="const val = parseInt(document.getElementById('amount-${player.socketId}').value); if(!isNaN(val)) adjustBalance('${player.socketId}', val)">Add</button>
+                    <button class="btn btn-warning btn-xs" onclick="const val = parseInt(document.getElementById('amount-${player.socketId}').value); if(!isNaN(val)) adjustBalance('${player.socketId}', -val)">Sub</button>
+                    <button class="btn btn-info btn-xs" onclick="const val = parseInt(document.getElementById('amount-${player.socketId}').value); if(!isNaN(val)) adjustBalance('${player.socketId}', val - ${player.balance})">Set</button>
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-success btn-xs" onclick="adjustBalance('${player.socketId}', 100)">+100</button>
+                    <button class="btn btn-success btn-xs" onclick="adjustBalance('${player.socketId}', 1000)">+1k</button>
+                    <button class="btn btn-danger btn-xs" onclick="kickPlayer('${player.socketId}', '${player.name}')">Kick</button>
+                </div>
             </div>
         `;
         listContainer.appendChild(item);

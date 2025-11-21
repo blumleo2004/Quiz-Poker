@@ -337,7 +337,7 @@ body {
 
 .table-center-content {
   position: absolute;
-  top: 15%; /* Fix top position to prevent shifting */
+  top: 50%; /* Centered */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -345,7 +345,7 @@ body {
   z-index: 10;
   width: 60%;
   text-align: center;
-  transform: rotateX(-15deg);
+  transform: translate(0, -50%) rotateX(-15deg); /* Center vertically and keep tilt */
 }
 
 /* Seat Refinements */
