@@ -392,6 +392,69 @@ body {
   padding: 2px 8px;
 }
 
+/* Pot Container in Header */
+.pot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 15px;
+  border-radius: 12px;
+  border: 1px solid var(--accent-warning);
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+  margin-left: 15px; /* Spacing from min bet */
+}
+
+.pot-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--accent-warning);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.pot-amount {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+}
+
+/* Eliminated Player Seat */
+.seat.eliminated {
+  filter: grayscale(100%);
+  opacity: 0.6;
+  border-color: #555;
+}
+
+.seat.eliminated .player-avatar {
+  border-color: #555;
+}
+
+.seat.eliminated .player-chips {
+  color: #888;
+}
+
+.seat.eliminated::after {
+  content: 'OUT';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ff3d71;
+  border: 3px solid #ff3d71;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.8);
+  z-index: 20;
+  pointer-events: none;
+}
+
 /* Controls Bar Refined */
 .game-controls-bar {
   padding: 1rem;

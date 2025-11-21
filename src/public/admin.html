@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Poker - Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .question-form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .hints-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .question-list {
+            display: grid;
+            gap: 15px;
+        }
+        .question-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .question-content {
+            flex-grow: 1;
+        }
+        .question-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-edit {
+            background-color: #f39c12;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Fragen Verwaltung</h1>
+            <a href="/" class="btn">Zurück zum Spiel</a>
+        </div>
+
+        <div class="question-form">
+            <h2>Neue Frage erstellen</h2>
+            <form id="addQuestionForm">
+                <div class="form-group">
+                    <label for="question">Frage</label>
+                    <textarea id="question" required minlength="10" maxlength="500"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="answer">Antwort</label>
+                    <input type="text" id="answer" required>
+                </div>
+                <div class="form-group">
+                    <label>Hinweise (1-3)</label>
+                    <div class="hints-container">
+                        <input type="text" class="hint-input" placeholder="Hinweis 1" required minlength="5" maxlength="200">
+                        <input type="text" class="hint-input" placeholder="Hinweis 2 (Optional)" minlength="5" maxlength="200">
+                        <input type="text" class="hint-input" placeholder="Hinweis 3 (Optional)" minlength="5" maxlength="200">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="difficulty">Schwierigkeit</label>
+                    <select id="difficulty">
+                        <option value="leicht">Leicht</option>
+                        <option value="mittel" selected>Mittel</option>
+                        <option value="schwer">Schwer</option>
+                        <option value="sehr schwer">Sehr Schwer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="category">Kategorie</label>
+                    <input type="text" id="category" required list="categories">
+                    <datalist id="categories">
+                        <option value="Allgemein">
+                        <option value="Geschichte">
+                        <option value="Geographie">
+                        <option value="Wissenschaft">
+                        <option value="Sport">
+                        <option value="Kultur">
+                    </datalist>
+                </div>
+                <button type="submit" class="btn">Frage speichern</button>
+            </form>
+        </div>
+
+        <div class="question-list-container">
+            <h2>Vorhandene Fragen (<span id="questionCount">0</span>)</h2>
+            <div id="questionList" class="question-list">
+                <!-- Questions will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>Frage bearbeiten</h2>
+            <form id="editQuestionForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editQuestion">Frage</label>
+                    <textarea id="editQuestion" required minlength="10" maxlength="500"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editAnswer">Antwort</label>
+                    <input type="text" id="editAnswer" required>
+                </div>
+                <div class="form-group">
+                    <label>Hinweise</label>
+                    <div class="hints-container">
+                        <input type="text" id="editHint1" class="edit-hint-input" placeholder="Hinweis 1" required minlength="5" maxlength="200">
+                        <input type="text" id="editHint2" class="edit-hint-input" placeholder="Hinweis 2 (Optional)" minlength="5" maxlength="200">
+                        <input type="text" id="editHint3" class="edit-hint-input" placeholder="Hinweis 3 (Optional)" minlength="5" maxlength="200">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editDifficulty">Schwierigkeit</label>
+                    <select id="editDifficulty">
+                        <option value="leicht">Leicht</option>
+                        <option value="mittel">Mittel</option>
+                        <option value="schwer">Schwer</option>
+                        <option value="sehr schwer">Sehr Schwer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editCategory">Kategorie</label>
+                    <input type="text" id="editCategory" required>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn">Speichern</button>
+                    <button type="button" class="btn btn-delete" onclick="closeModal()">Abbrechen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

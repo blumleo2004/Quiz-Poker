@@ -1,0 +1,608 @@
+[2025-11-21T18:39:21.641Z] 🎮 Starting Complete Game Flow Test
+[2025-11-21T18:39:21.668Z] 🔌 Host connected
+[2025-11-21T18:39:21.669Z] 🔌 Alice connected
+[2025-11-21T18:39:21.670Z] 🔌 Bob connected
+[2025-11-21T18:39:22.666Z] 1️⃣ Joining Game...
+[2025-11-21T18:39:22.668Z] ✅ Host: Session created (host)
+[2025-11-21T18:39:22.668Z] 📊 Host state update: SHOWDOWN
+[2025-11-21T18:39:23.179Z] ✅ Alice: Session created (undefined)
+[2025-11-21T18:39:23.180Z] 📊 Alice state update: SHOWDOWN
+[2025-11-21T18:39:23.693Z] ✅ Bob: Session created (undefined)
+[2025-11-21T18:39:23.694Z] 📊 Bob state update: SHOWDOWN
+[2025-11-21T18:39:25.694Z] 2️⃣ Starting Game...
+[2025-11-21T18:39:25.695Z] ⏳ Waiting for ANSWERING phase...
+[2025-11-21T18:39:25.756Z] 🎯 Host: Game Started! Question: "Wie viele Kilokalorien haben zusammen: 300g gekochter Reis, 200g Hähnchenbrustfilet und 100g Brokkoli?"
+[2025-11-21T18:39:25.756Z] 📊 Host state update: ANSWERING
+[2025-11-21T18:39:25.757Z] 🎯 Alice: Game Started! Question: "Wie viele Kilokalorien haben zusammen: 300g gekochter Reis, 200g Hähnchenbrustfilet und 100g Brokkoli?"
+[2025-11-21T18:39:25.757Z] 📊 Alice state update: ANSWERING
+[2025-11-21T18:39:25.758Z] 🎯 Bob: Game Started! Question: "Wie viele Kilokalorien haben zusammen: 300g gekochter Reis, 200g Hähnchenbrustfilet und 100g Brokkoli?"
+[2025-11-21T18:39:25.758Z] 📊 Bob state update: ANSWERING
+[2025-11-21T18:39:25.804Z] ✅ Game started (ANSWERING)!
+[2025-11-21T18:39:25.805Z] 3️⃣ Submitting answers...
+[2025-11-21T18:39:26.006Z] 4️⃣ Waiting for game to complete automatically...
+[2025-11-21T18:39:26.009Z] 💰 Host: Betting Round 1 started. Active: Alice
+[2025-11-21T18:39:26.009Z] 💰 Alice: Betting Round 1 started. Active: Alice
+[2025-11-21T18:39:26.010Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:26.010Z] 💰 Bob: Betting Round 1 started. Active: Alice
+[2025-11-21T18:39:26.518Z] 🎲 Host saw: Alice call 10
+[2025-11-21T18:39:26.519Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:26.519Z] 🎲 Alice saw: Alice call 10
+[2025-11-21T18:39:26.520Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:26.520Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:26.520Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:26.521Z] 🎲 Bob saw: Alice call 10
+[2025-11-21T18:39:26.521Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:26.522Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:26.522Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:27.028Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:27.029Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:27.029Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:27.030Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:27.030Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:27.030Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:27.031Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:27.031Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:27.032Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:27.032Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:27.537Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:27.538Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:27.538Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:27.538Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:27.539Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:27.539Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:27.540Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:27.540Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:27.540Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:27.540Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:28.050Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:28.051Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:28.051Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:28.052Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:28.052Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:28.053Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:28.053Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:28.053Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:28.054Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:28.054Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:28.561Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:28.562Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:28.563Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:28.563Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:28.563Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:28.564Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:28.564Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:28.565Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:28.565Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:28.565Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:29.075Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:29.076Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:29.076Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:29.077Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:29.077Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:29.077Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:29.078Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:29.078Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:29.078Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:29.079Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:29.585Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:29.585Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:29.586Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:29.586Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:29.586Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:29.587Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:29.587Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:29.587Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:29.588Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:29.588Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:30.093Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:30.093Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:30.094Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:30.094Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:30.094Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:30.095Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:30.095Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:30.096Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:30.096Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:30.097Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:30.606Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:30.606Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:30.606Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:30.607Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:30.607Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:30.608Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:30.608Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:30.608Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:30.609Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:30.609Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:31.119Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:31.120Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:31.120Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:31.121Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:31.121Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:31.122Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:31.122Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:31.122Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:31.123Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:31.123Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:31.637Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:31.637Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:31.638Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:31.638Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:31.639Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:31.639Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:31.639Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:31.640Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:31.640Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:31.640Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:32.148Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:32.149Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:32.149Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:32.150Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:32.151Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:32.151Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:32.151Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:32.152Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:32.152Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:32.153Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:32.662Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:32.662Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:32.662Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:32.663Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:32.663Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:32.664Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:32.664Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:32.665Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:32.665Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:32.665Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:33.176Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:33.176Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:33.177Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:33.177Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:33.177Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:33.178Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:33.178Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:33.179Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:33.179Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:33.179Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:33.688Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:33.689Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:33.689Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:33.690Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:33.690Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:33.690Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:33.691Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:33.691Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:33.691Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:33.692Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:34.200Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:34.201Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:34.201Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:34.202Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:34.202Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:34.202Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:34.203Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:34.203Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:34.203Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:34.204Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:34.709Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:34.709Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:34.710Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:34.710Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:34.710Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:34.711Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:34.711Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:34.712Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:34.712Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:34.712Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:35.223Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:35.223Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:35.224Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:35.224Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:35.224Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:35.225Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:35.225Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:35.226Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:35.226Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:35.226Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:35.737Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:35.737Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:35.738Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:35.738Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:35.738Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:35.739Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:35.739Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:35.740Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:35.740Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:35.740Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:36.250Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:36.250Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:36.251Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:36.251Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:36.251Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:36.252Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:36.252Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:36.252Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:36.253Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:36.253Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:36.760Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:36.760Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:36.760Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:36.761Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:36.761Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:36.761Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:36.762Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:36.762Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:36.762Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:36.763Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:37.273Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:37.273Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:37.274Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:37.274Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:37.275Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:37.275Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:37.275Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:37.276Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:37.276Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:37.276Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:37.786Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:37.787Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:37.787Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:37.787Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:37.788Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:37.788Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:37.789Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:37.789Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:37.789Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:37.789Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:38.298Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:38.299Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:38.299Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:38.300Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:38.300Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:38.300Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:38.300Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:38.301Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:38.301Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:38.302Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:38.809Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:38.810Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:38.810Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:38.811Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:38.811Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:38.811Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:38.812Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:38.812Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:38.813Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:38.813Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:39.325Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:39.325Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:39.325Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:39.326Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:39.326Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:39.326Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:39.327Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:39.327Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:39.328Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:39.328Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:39.839Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:39.839Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:39.840Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:39.840Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:39.840Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:39.841Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:39.841Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:39.841Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:39.842Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:39.842Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:40.352Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:40.352Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:40.353Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:40.353Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:40.353Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:40.354Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:40.354Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:40.354Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:40.355Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:40.355Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:40.864Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:40.864Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:40.864Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:40.865Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:40.865Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:40.866Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:40.866Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:40.866Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:40.867Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:40.867Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:41.376Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:41.376Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:41.377Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:41.377Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:41.377Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:41.378Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:41.378Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:41.378Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:41.379Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:41.379Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:41.890Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:41.891Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:41.891Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:41.892Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:41.892Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:41.892Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:41.893Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:41.893Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:41.893Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:41.893Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:42.403Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:42.404Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:42.404Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:42.405Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:42.405Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:42.405Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:42.406Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:42.406Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:42.407Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:42.407Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:42.918Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:42.919Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:42.919Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:42.920Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:42.920Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:42.920Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:42.921Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:42.921Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:42.921Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:42.922Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:43.432Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:43.432Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:43.433Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:43.433Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:43.433Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:43.434Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:43.434Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:43.434Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:43.435Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:43.435Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:43.944Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:43.944Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:43.944Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:43.945Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:43.945Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:43.946Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:43.946Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:43.946Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:43.947Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:43.947Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:44.455Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:44.455Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:44.456Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:44.456Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:44.456Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:44.457Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:44.457Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:44.457Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:44.458Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:44.458Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:44.967Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:44.968Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:44.968Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:44.969Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:44.969Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:44.969Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:44.970Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:44.970Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:44.970Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:44.971Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:45.478Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:45.479Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:45.479Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:45.480Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:45.480Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:45.480Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:45.480Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:45.481Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:45.481Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:45.481Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:45.990Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:45.991Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:45.991Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:45.991Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:45.992Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:45.992Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:45.992Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:45.993Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:45.993Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:45.993Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:46.503Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:46.503Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:46.503Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:46.504Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:46.505Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:46.505Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:46.505Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:46.506Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:46.506Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:46.506Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:47.017Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:47.018Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:47.018Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:47.019Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:47.019Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:47.019Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:47.020Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:47.020Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:47.020Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:47.021Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:47.529Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:47.529Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:47.530Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:47.530Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:47.530Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:47.530Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:47.531Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:47.531Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:47.531Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:47.532Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:48.038Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:48.039Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:48.039Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:48.040Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:48.040Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:48.040Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:48.041Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:48.041Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:48.041Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:48.041Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:48.549Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:48.550Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:48.550Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:48.550Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:48.551Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:48.551Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:48.551Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:48.552Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:48.552Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:48.552Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:49.061Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:49.062Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:49.062Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:49.063Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:49.063Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:49.063Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:49.064Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:49.064Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:49.064Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:49.065Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:49.575Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:49.576Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:49.576Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:49.576Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:49.577Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:49.577Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:49.577Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:49.578Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:49.578Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:49.578Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:50.089Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:50.090Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:50.091Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:50.091Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:50.091Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:50.092Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:50.092Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:50.092Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:50.093Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:50.093Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:50.607Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:50.608Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:50.608Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:50.609Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:50.609Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:50.609Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:50.609Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:50.610Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:50.610Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:50.611Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:51.120Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:51.120Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:51.120Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:51.121Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:51.121Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:51.122Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:51.122Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:51.122Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:51.123Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:51.123Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:51.629Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:51.629Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:51.630Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:51.630Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:51.630Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:51.630Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:51.631Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:51.631Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:51.632Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:51.632Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:52.142Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:52.143Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:52.143Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:52.144Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:52.144Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:52.144Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:52.145Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:52.145Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:52.145Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:52.146Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:52.653Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:52.654Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:52.654Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:52.655Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:52.655Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:52.655Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:52.656Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:52.656Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:52.656Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:52.657Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:53.163Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:53.163Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:53.164Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:53.164Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:53.164Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:53.165Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:53.165Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:53.166Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:53.166Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:53.166Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:53.675Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:53.676Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:53.676Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:53.676Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:53.677Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:53.677Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:53.677Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:53.678Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:53.678Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:53.678Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:54.189Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:54.189Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:54.190Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:54.190Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:54.191Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:54.191Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:54.191Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:54.192Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:54.192Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:54.192Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:54.702Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:54.703Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:54.703Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:54.704Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:54.704Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:54.704Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:54.704Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:54.705Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:54.705Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:54.705Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:55.214Z] 🎲 Host saw: Alice check 
+[2025-11-21T18:39:55.214Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:55.215Z] 👉 Host sees active player changed to: Bob
+[2025-11-21T18:39:55.215Z] 🎲 Alice saw: Alice check 
+[2025-11-21T18:39:55.215Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:55.216Z] 👉 Alice sees active player changed to: Bob
+[2025-11-21T18:39:55.216Z] 🎲 Bob saw: Alice check 
+[2025-11-21T18:39:55.216Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:55.217Z] 👉 Bob sees active player changed to: Bob
+[2025-11-21T18:39:55.217Z] 👉 It's Bob's turn. Calling...
+[2025-11-21T18:39:55.726Z] 🎲 Host saw: Bob check 
+[2025-11-21T18:39:55.727Z] 📊 Host state update: BETTING_ROUND_1
+[2025-11-21T18:39:55.728Z] 👉 Host sees active player changed to: Alice
+[2025-11-21T18:39:55.728Z] 🎲 Alice saw: Bob check 
+[2025-11-21T18:39:55.728Z] 📊 Alice state update: BETTING_ROUND_1
+[2025-11-21T18:39:55.729Z] 👉 Alice sees active player changed to: Alice
+[2025-11-21T18:39:55.729Z] 👉 It's Alice's turn. Calling...
+[2025-11-21T18:39:55.730Z] 🎲 Bob saw: Bob check 
+[2025-11-21T18:39:55.730Z] 📊 Bob state update: BETTING_ROUND_1
+[2025-11-21T18:39:55.730Z] 👉 Bob sees active player changed to: Alice
+[2025-11-21T18:39:56.021Z] ❌ Timeout - Final state: BETTING_ROUND_1
+[2025-11-21T18:39:56.022Z] ❌ Test failed: Timeout waiting for showdown to complete

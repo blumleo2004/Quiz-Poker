@@ -129,7 +129,8 @@ export class UIManager {
         seatedPlayers.forEach((player, index) => {
             const seatEl = document.createElement('div');
             const isActive = player.socketId === gameState.activePlayerSocketId;
-            seatEl.className = `seat player-seat ${isActive ? 'active-turn' : ''} ${player.hasFolded ? 'folded' : ''}`;
+            const isEliminated = player.isEliminated;
+            seatEl.className = `seat player-seat ${isActive ? 'active-turn' : ''} ${player.hasFolded ? 'folded' : ''} ${isEliminated ? 'eliminated' : ''}`;
             seatEl.dataset.id = player.socketId;
             seatEl.dataset.playerName = player.name;
 

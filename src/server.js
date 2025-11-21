@@ -113,6 +113,78 @@ mongoose.connection.on('disconnected', () => {
 // Statische Dateien aus dem Ordner "public" bereitstellen
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Route für die Admin-Seite
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/admin.html'));
+});
+
+// API Routes for Questions
+app.get('/api/questions', async (req, res) => {
+  try {
+    const questions = await Question.find().sort({ created: -1 });
+    res.json(questions);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/questions/:id', async (req, res) => {
+    try {
+        const question = await Question.findById(req.params.id);
+        if (!question) return res.status(404).json({ message: 'Frage nicht gefunden' });
+        res.json(question);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.post('/api/questions', async (req, res) => {
+  const question = new Question({
+    question: req.body.question,
+    answer: req.body.answer,
+    hints: req.body.hints,
+    difficulty: req.body.difficulty,
+    category: req.body.category
+  });
+
+  try {
+    const newQuestion = await question.save();
+    res.status(201).json(newQuestion);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.put('/api/questions/:id', async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.status(404).json({ message: 'Frage nicht gefunden' });
+
+    if (req.body.question != null) question.question = req.body.question;
+    if (req.body.answer != null) question.answer = req.body.answer;
+    if (req.body.hints != null) question.hints = req.body.hints;
+    if (req.body.difficulty != null) question.difficulty = req.body.difficulty;
+    if (req.body.category != null) question.category = req.body.category;
+
+    const updatedQuestion = await question.save();
+    res.json(updatedQuestion);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.delete('/api/questions/:id', async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.status(404).json({ message: 'Frage nicht gefunden' });
+    
+    await Question.deleteOne({ _id: req.params.id });
+    res.json({ message: 'Frage gelöscht' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Route für die Startseite
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
@@ -517,8 +589,12 @@ io.on('connection', (socket) => {
 });
 
 // Server starten
-http.listen(process.env.PORT || 3000, () => {
-  console.log(`Server läuft auf Port ${process.env.PORT || 3000}`);
-  console.log(`HINWEIS: Nutzen Sie http:// (nicht https://) für den Zugriff.`);
-  logGameEvent('SERVER_STARTED', { port: process.env.PORT || 3000 });
-});
+if (require.main === module) {
+  http.listen(process.env.PORT || 3000, () => {
+    console.log(`Server läuft auf Port ${process.env.PORT || 3000}`);
+    console.log(`HINWEIS: Nutzen Sie http:// (nicht https://) für den Zugriff.`);
+    logGameEvent('SERVER_STARTED', { port: process.env.PORT || 3000 });
+  });
+}
+
+module.exports = { app, http };

@@ -64,6 +64,10 @@
         <div class="header-center">
           <div id="phase-display" class="phase-badge">WAITING</div>
           <div class="blind-info">Min Bet: <span id="minBetDisplay">20</span></div>
+          <div id="pot-container" class="pot-container">
+            <div class="pot-label">POT</div>
+            <div id="pot-amount" class="pot-amount">0</div>
+          </div>
         </div>
         <div class="header-right">
           <div class="user-profile">
@@ -78,11 +82,6 @@
       <main class="game-table-area">
         <div class="poker-table-felt">
           <div class="table-center-content">
-            <div id="pot-container" class="pot-container">
-              <div class="pot-label">POT</div>
-              <div id="pot-amount" class="pot-amount">0</div>
-            </div>
-
             <!-- Community Cards / Question Area -->
             <div id="center-info-area" class="center-info glass-panel">
               <div id="question-display" class="question-box hidden">
@@ -166,6 +165,7 @@
               <button id="resetRoundBtn" class="btn btn-warning btn-sm">Reset Round</button>
               <button id="resetGameBtn" class="btn btn-danger btn-sm">Reset Game</button>
               <button id="managePlayersBtn" class="btn btn-info btn-sm">Players</button>
+              <a href="/admin" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Questions</a>
             </div>
 
             <div class="host-section">

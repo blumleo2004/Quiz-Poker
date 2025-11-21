@@ -64,6 +64,8 @@ class Game {
           currentBetInRound: player.currentBetInRound,
           isActive: player.isActive,
           hasFolded: player.hasFolded,
+          isAllIn: player.isAllIn,
+          isEliminated: player.isEliminated,
           socketId: player.socketId, // Ensure socketId is saved
           // Add any other serializable player properties here
         };
@@ -109,38 +111,39 @@ class Game {
         // Convert saved players (likely plain objects from DB) back into this.players
         this.players = {}; // Reset players object
         if (savedGame.players && typeof savedGame.players === 'object') {
-            for (const socketId in savedGame.players) {
-                // Skip Mongoose internal properties that start with $
-                if (socketId.startsWith('$')) continue;
-                
-                // Ensure the loaded player object is a plain JS object
-                // and not a Mongoose document/subdocument by explicitly copying properties.
-                const dbPlayer = savedGame.players[socketId];
-                // Skip if dbPlayer is not a valid object or doesn't have required properties
-                if (!dbPlayer || typeof dbPlayer !== 'object' || !dbPlayer.name) continue;
-                
-                this.players[socketId] = {
-                    name: dbPlayer.name,
-                    role: dbPlayer.role,
-                    balance: dbPlayer.balance || 1000,
-                    finalAnswer: dbPlayer.finalAnswer,
-                    currentBetInRound: dbPlayer.currentBetInRound || 0,
-                    isActive: false, // Set to false initially, will be true on reconnect
-                    hasFolded: dbPlayer.hasFolded || false,
-                    isAllIn: dbPlayer.isAllIn || false,
-                    socketId: dbPlayer.socketId || socketId, // Ensure socketId is present
-                    // Copy other necessary properties
-                };
-            }
+          for (const socketId in savedGame.players) {
+            // Skip Mongoose internal properties that start with $
+            if (socketId.startsWith('$')) continue;
+
+            // Ensure the loaded player object is a plain JS object
+            // and not a Mongoose document/subdocument by explicitly copying properties.
+            const dbPlayer = savedGame.players[socketId];
+            // Skip if dbPlayer is not a valid object or doesn't have required properties
+            if (!dbPlayer || typeof dbPlayer !== 'object' || !dbPlayer.name) continue;
+
+            this.players[socketId] = {
+              name: dbPlayer.name,
+              role: dbPlayer.role,
+              balance: dbPlayer.balance !== undefined ? dbPlayer.balance : 1000,
+              finalAnswer: dbPlayer.finalAnswer,
+              currentBetInRound: dbPlayer.currentBetInRound || 0,
+              isActive: false, // Set to false initially, will be true on reconnect
+              hasFolded: dbPlayer.hasFolded || false,
+              isAllIn: dbPlayer.isAllIn || false,
+              isEliminated: dbPlayer.isEliminated || false,
+              socketId: dbPlayer.socketId || socketId, // Ensure socketId is present
+              // Copy other necessary properties
+            };
+          }
         }
 
         this.playerOrder = savedGame.playerOrder || [];
         this.hostSocketId = savedGame.hostSocketId;
         this.state = savedGame.state || GameState.WAITING;
         if (savedGame.currentQuestionId) {
-            this.currentQuestion = await Question.findById(savedGame.currentQuestionId);
+          this.currentQuestion = await Question.findById(savedGame.currentQuestionId);
         } else {
-            this.currentQuestion = null;
+          this.currentQuestion = null;
         }
         this.correctAnswer = savedGame.correctAnswer;
         this.hints = savedGame.hints || [];
@@ -154,7 +157,7 @@ class Game {
         this.minimumRaise = savedGame.minimumRaise || 20;
         this.playerWhoMadeLastBetOrRaise = savedGame.playerWhoMadeLastBetOrRaise;
         this.playerWhoInitiatedCurrentBettingAction = savedGame.playerWhoInitiatedCurrentBettingAction;
-        
+
         this.roundNumber = savedGame.roundNumber || 0;
         this.smallBlind = savedGame.smallBlind || 10;
         this.bigBlind = savedGame.bigBlind || 20;
@@ -165,12 +168,12 @@ class Game {
         logGameEvent('GAME_STATE_LOADED', { gameId: this.gameId, state: this.state });
       } else {
         logGameEvent('NO_SAVED_GAME_FOUND', { gameId: this.gameId });
-        await this._saveGameToDB(); 
+        await this._saveGameToDB();
       }
     } catch (error) {
       logError(error, { context: 'Game._loadGameFromDB', gameId: this.gameId });
       this.resetGameToDefaults(); // Reset to a known good state
-      await this._saveGameToDB(); 
+      await this._saveGameToDB();
     }
   }
 
@@ -205,8 +208,8 @@ class Game {
 
   async resetGame(actorSocketId) {
     if (actorSocketId !== this.hostSocketId) {
-        this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann das Spiel zurücksetzen.");
-        return false;
+      this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann das Spiel zurücksetzen.");
+      return false;
     }
 
     this.resetGameToDefaults();
@@ -214,16 +217,16 @@ class Game {
     this.hostSocketId = actorSocketId;
     // Re-add host to players if needed, or just ensure host state is clean
     this.players[actorSocketId] = {
-        name: 'Host', // Or keep previous name if stored
-        role: 'host',
-        socketId: actorSocketId
+      name: 'Host', // Or keep previous name if stored
+      role: 'host',
+      socketId: actorSocketId
     };
 
     logGameEvent('GAME_RESET_BY_HOST', { hostSocketId: actorSocketId });
-    
+
     // Notify all clients to reset their state
     this.io.emit('gameReset', { message: 'Das Spiel wurde vom Host zurückgesetzt.' });
-    
+
     await this._saveGameToDB();
     return true;
   }
@@ -231,33 +234,33 @@ class Game {
   async reconnectPlayer(oldSocketId, newSocketId) {
     const player = this.players[oldSocketId];
     if (player) {
-        // Update player object
-        this.players[newSocketId] = {
-            ...player,
-            socketId: newSocketId,
-            isActive: true
-        };
-        delete this.players[oldSocketId];
+      // Update player object
+      this.players[newSocketId] = {
+        ...player,
+        socketId: newSocketId,
+        isActive: true
+      };
+      delete this.players[oldSocketId];
 
-        // Update order
-        const orderIndex = this.playerOrder.indexOf(oldSocketId);
-        if (orderIndex !== -1) {
-            this.playerOrder[orderIndex] = newSocketId;
-        }
-        
-        // Update host if needed
-        if (this.hostSocketId === oldSocketId || player.role === 'host') {
-            this.hostSocketId = newSocketId;
-        }
-        
-        // Update active player if needed
-        if (this.activePlayerSocketId === oldSocketId) {
-            this.activePlayerSocketId = newSocketId;
-        }
+      // Update order
+      const orderIndex = this.playerOrder.indexOf(oldSocketId);
+      if (orderIndex !== -1) {
+        this.playerOrder[orderIndex] = newSocketId;
+      }
 
-        logGameEvent('PLAYER_RECONNECTED_VIA_TOKEN', { oldSocketId, newSocketId, name: player.name });
-        await this._saveGameToDB();
-        return this.players[newSocketId];
+      // Update host if needed
+      if (this.hostSocketId === oldSocketId || player.role === 'host') {
+        this.hostSocketId = newSocketId;
+      }
+
+      // Update active player if needed
+      if (this.activePlayerSocketId === oldSocketId) {
+        this.activePlayerSocketId = newSocketId;
+      }
+
+      logGameEvent('PLAYER_RECONNECTED_VIA_TOKEN', { oldSocketId, newSocketId, name: player.name });
+      await this._saveGameToDB();
+      return this.players[newSocketId];
     }
     return null;
   }
@@ -307,7 +310,7 @@ class Game {
       await this._saveGameToDB();
       return this.players[socketId];
     }
-    
+
     // Neuer Spieler
     this.players[socketId] = {
       name: name,
@@ -368,16 +371,16 @@ class Game {
         this.io.emit('hostDisconnected', { message: 'The host has disconnected. The game may be paused.', newHost: null });
         // Consider if game should auto-pause or if a player can become host
         if (this.state !== GameState.WAITING) {
-            // this.state = GameState.WAITING; // Or a PAUSED state
-            // this.io.emit('gameStateUpdate', this.getGameStateSnapshot());
-            logGameEvent('GAME_PAUSED_DUE_TO_HOST_DISCONNECT', {});
-            // For now, we don't automatically end the game, but this is a good place for such logic.
+          // this.state = GameState.WAITING; // Or a PAUSED state
+          // this.io.emit('gameStateUpdate', this.getGameStateSnapshot());
+          logGameEvent('GAME_PAUSED_DUE_TO_HOST_DISCONNECT', {});
+          // For now, we don't automatically end the game, but this is a good place for such logic.
         }
       }
       // Don't delete player object immediately to allow for reconnection, mark inactive instead.
       // delete this.players[socketId];
       // this.playerOrder = this.playerOrder.filter(id => id !== socketId); // Only if not supporting reconnection for order
-      
+
       this.broadcastPlayerList(); // Update all clients about the change in player status
       this.io.emit('gameStateUpdate', this.getGameStateSnapshot()); // Also send full game state
       await this._saveGameToDB();
@@ -391,7 +394,7 @@ class Game {
   getAllPlayers() {
     return this.players;
   }
-  
+
   getActivePlayers() {
     return Object.values(this.players).filter(p => p.role === 'player' && p.isActive && !p.hasFolded);
   }
@@ -399,11 +402,11 @@ class Game {
   getPlayerOrderNames() {
     return this.playerOrder.map(id => this.players[id]?.name || "Unbekannt");
   }
-  
+
   broadcastPlayerList() {
     this.io.emit('playerList', { // Oder spezifischeres Event
-        players: this.getAllPlayers(), // Sende alle Spielerinfos
-        playerOrder: this.getPlayerOrderNames()
+      players: this.getAllPlayers(), // Sende alle Spielerinfos
+      playerOrder: this.getPlayerOrderNames()
     });
   }
 
@@ -436,9 +439,9 @@ class Game {
       };
     }
     return {
-        players: playerStates,
-        playerOrder: this.getPlayerOrderNames(),
-        hostSocketId: this.hostSocketId
+      players: playerStates,
+      playerOrder: this.getPlayerOrderNames(),
+      hostSocketId: this.hostSocketId
     };
   }
 
@@ -461,10 +464,10 @@ class Game {
       // Try to find a question that is different from the current one
       const filter = this.currentQuestion ? { _id: { $ne: this.currentQuestion._id } } : {};
       question = await Question.findRandomQuestion(filter);
-      
+
       // Fallback if no other question found (e.g. only 1 question in DB)
       if (!question) {
-         question = await Question.findRandomQuestion();
+        question = await Question.findRandomQuestion();
       }
     } catch (dbError) {
       logError(dbError, { context: 'startGame - findRandomQuestion' });
@@ -498,17 +501,17 @@ class Game {
         player.isActive = true; // Sicherstellen, dass alle teilnehmenden Spieler zu Beginn aktiv sind
       }
     });
-    
-    logGameEvent('GAME_STARTED_IN_GAME_CLASS', { 
-        questionId: question._id, 
-        question: question.question,
-        playerCount: activePlayers.length 
+
+    logGameEvent('GAME_STARTED_IN_GAME_CLASS', {
+      questionId: question._id,
+      question: question.question,
+      playerCount: activePlayers.length
     });
-    
+
     this.io.emit('gameStarted', {
-        question: this.currentQuestion.question,
-        gameState: this.getGameStateSnapshot(), // Sende einen Snapshot des Spielzustands
-        phase: 'ANSWERING'
+      question: this.currentQuestion.question,
+      gameState: this.getGameStateSnapshot(), // Sende einen Snapshot des Spielzustands
+      phase: 'ANSWERING'
     });
     await this._saveGameToDB();
     return true; // Indicate success
@@ -535,10 +538,10 @@ class Game {
     this.io.emit('playerAnswered', { playerId: socketId });
 
     if (this.hostSocketId) {
-        this.io.to(this.hostSocketId).emit('answerSubmitted', {
-            player: player.name,
-            answer: answer
-        });
+      this.io.to(this.hostSocketId).emit('answerSubmitted', {
+        player: player.name,
+        answer: answer
+      });
     }
 
     const allPlayersAnswered = this.getActivePlayers().every(p => p.finalAnswer !== null);
@@ -550,143 +553,144 @@ class Game {
     }
     return true;
   }
-  
+
   async startNewBettingRound(roundNumber) {
     roundNumber = parseInt(roundNumber, 10); // Ensure it's a number
     if (isNaN(roundNumber)) {
-        logError(new Error(`Invalid roundNumber passed to startNewBettingRound: ${roundNumber}`), { context: 'startNewBettingRound' });
-        return;
+      logError(new Error(`Invalid roundNumber passed to startNewBettingRound: ${roundNumber}`), { context: 'startNewBettingRound' });
+      return;
     }
     this.state = GameState[`BETTING_ROUND_${roundNumber}`];
     this.bettingRound = roundNumber;
     this.currentBet = 0; // Der höchste Einsatz in DIESER Runde wird zurückgesetzt
-    
+
     // Calculate Minimum Bet based on Round Number (Tournament Mode)
     // Increases every 3 rounds
     const baseMinBet = 20;
-    
+
     if (this.blindsEnabled) {
-        const increaseInterval = 3;
-        // roundNumber is the game round (question number), but here 'roundNumber' arg is betting round (1-4).
-        // We need this.roundNumber (the question count).
-        // Ensure this.roundNumber is at least 1
-        const currentQuestionRound = Math.max(1, this.roundNumber);
-        const multiplier = Math.pow(2, Math.floor((currentQuestionRound - 1) / increaseInterval));
-        this.minimumRaise = baseMinBet * multiplier;
-        this.bigBlind = this.minimumRaise;
-        this.smallBlind = Math.floor(this.minimumRaise / 2);
+      const increaseInterval = 3;
+      // roundNumber is the game round (question number), but here 'roundNumber' arg is betting round (1-4).
+      // We need this.roundNumber (the question count).
+      // Ensure this.roundNumber is at least 1
+      const currentQuestionRound = Math.max(1, this.roundNumber);
+      const multiplier = Math.pow(2, Math.floor((currentQuestionRound - 1) / increaseInterval));
+      this.minimumRaise = baseMinBet * multiplier;
+      this.bigBlind = this.minimumRaise;
+      this.smallBlind = Math.floor(this.minimumRaise / 2);
     } else {
-        this.minimumRaise = baseMinBet;
+      this.minimumRaise = baseMinBet;
     }
-    
+
     this.getActivePlayers().forEach(p => p.currentBetInRound = 0); // Einsätze pro Runde zurücksetzen
 
     let firstPlayerId = null;
 
     // Helper to find next active player index
     const getNextActiveIndex = (startIndex, includeAllIn = false) => {
-        if (this.playerOrder.length === 0) return -1;
-        let idx = (startIndex + 1) % this.playerOrder.length;
-        let attempts = 0;
-        while (attempts < this.playerOrder.length) {
-            const pid = this.playerOrder[idx];
-            const p = this.players[pid];
-            if (p && p.isActive && !p.hasFolded && p.role === 'player') {
-                 if (includeAllIn || (!p.isAllIn && p.balance > 0)) {
-                     return idx;
-                 }
-            }
-            idx = (idx + 1) % this.playerOrder.length;
-            attempts++;
+      if (this.playerOrder.length === 0) return -1;
+      let idx = (startIndex + 1) % this.playerOrder.length;
+      let attempts = 0;
+      while (attempts < this.playerOrder.length) {
+        const pid = this.playerOrder[idx];
+        const p = this.players[pid];
+        if (p && p.isActive && !p.hasFolded && p.role === 'player') {
+          if (includeAllIn || (!p.isAllIn && p.balance > 0)) {
+            return idx;
+          }
         }
-        return -1;
+        idx = (idx + 1) % this.playerOrder.length;
+        attempts++;
+      }
+      return -1;
     };
 
     if (roundNumber === 1 && this.blindsEnabled && this.playerOrder.length >= 2) {
-        const activeCount = this.getActivePlayers().length;
-        let sbIndex = -1;
-        let bbIndex = -1;
-        
-        // Determine SB and BB
-        if (activeCount === 2) {
-             // Heads-up: Dealer is SB
-             const dealerPid = this.playerOrder[this.dealerPosition];
-             const dealerP = this.players[dealerPid];
-             if (dealerP && dealerP.isActive && !dealerP.hasFolded && dealerP.balance > 0) {
-                 sbIndex = this.dealerPosition;
-             } else {
-                 sbIndex = getNextActiveIndex(this.dealerPosition, true);
-             }
-             bbIndex = getNextActiveIndex(sbIndex, true);
+      const activeCount = this.getActivePlayers().length;
+      let sbIndex = -1;
+      let bbIndex = -1;
+
+      // Determine SB and BB
+      if (activeCount === 2) {
+        // Heads-up: Dealer is SB
+        const dealerPid = this.playerOrder[this.dealerPosition];
+        const dealerP = this.players[dealerPid];
+        if (dealerP && dealerP.isActive && !dealerP.hasFolded && dealerP.balance > 0) {
+          sbIndex = this.dealerPosition;
         } else {
-             // Normal: SB is next after Dealer
-             sbIndex = getNextActiveIndex(this.dealerPosition, true);
-             if (sbIndex !== -1) {
-                 bbIndex = getNextActiveIndex(sbIndex, true);
-             }
+          sbIndex = getNextActiveIndex(this.dealerPosition, true);
+        }
+        bbIndex = getNextActiveIndex(sbIndex, true);
+      } else {
+        // Normal: SB is next after Dealer
+        sbIndex = getNextActiveIndex(this.dealerPosition, true);
+        if (sbIndex !== -1) {
+          bbIndex = getNextActiveIndex(sbIndex, true);
+        }
+      }
+
+      if (sbIndex !== -1 && bbIndex !== -1) {
+        const sbPlayerId = this.playerOrder[sbIndex];
+        const bbPlayerId = this.playerOrder[bbIndex];
+        const sbPlayer = this.players[sbPlayerId];
+        const bbPlayer = this.players[bbPlayerId];
+
+        // Post SB
+        let sbAmount = this.smallBlind;
+        if (sbPlayer.balance < sbAmount) {
+          sbAmount = sbPlayer.balance;
+          sbPlayer.isAllIn = true;
+        }
+        sbPlayer.balance -= sbAmount;
+        sbPlayer.currentBetInRound = sbAmount;
+        this.pot += sbAmount;
+        logGameEvent('SMALL_BLIND_POSTED', { player: sbPlayer.name, amount: sbAmount });
+
+        // Post BB
+        let bbAmount = this.bigBlind;
+        if (bbPlayer.balance < bbAmount) {
+          bbAmount = bbPlayer.balance;
+          bbPlayer.isAllIn = true;
+        }
+        bbPlayer.balance -= bbAmount;
+        bbPlayer.currentBetInRound = bbAmount;
+        this.pot += bbAmount;
+        logGameEvent('BIG_BLIND_POSTED', { player: bbPlayer.name, amount: bbAmount });
+
+        this.currentBet = this.bigBlind;
+
+        // UTG starts (player after BB)
+        const utgIndex = getNextActiveIndex(bbIndex, false);
+        if (utgIndex !== -1) {
+          firstPlayerId = this.playerOrder[utgIndex];
         }
 
-        if (sbIndex !== -1 && bbIndex !== -1) {
-            const sbPlayerId = this.playerOrder[sbIndex];
-            const bbPlayerId = this.playerOrder[bbIndex];
-            const sbPlayer = this.players[sbPlayerId];
-            const bbPlayer = this.players[bbPlayerId];
-
-            // Post SB
-            let sbAmount = this.smallBlind;
-            if (sbPlayer.balance < sbAmount) {
-                sbAmount = sbPlayer.balance;
-                sbPlayer.isAllIn = true;
-            }
-            sbPlayer.balance -= sbAmount;
-            sbPlayer.currentBetInRound = sbAmount;
-            this.pot += sbAmount;
-            logGameEvent('SMALL_BLIND_POSTED', { player: sbPlayer.name, amount: sbAmount });
-
-            // Post BB
-            let bbAmount = this.bigBlind;
-            if (bbPlayer.balance < bbAmount) {
-                bbAmount = bbPlayer.balance;
-                bbPlayer.isAllIn = true;
-            }
-            bbPlayer.balance -= bbAmount;
-            bbPlayer.currentBetInRound = bbAmount;
-            this.pot += bbAmount;
-            logGameEvent('BIG_BLIND_POSTED', { player: bbPlayer.name, amount: bbAmount });
-
-            this.currentBet = this.bigBlind;
-            
-            // UTG starts (player after BB)
-            const utgIndex = getNextActiveIndex(bbIndex, false);
-            if (utgIndex !== -1) {
-                firstPlayerId = this.playerOrder[utgIndex];
-            }
-            
-            this.io.emit('blindsPosted', {
-                sbPlayer: sbPlayer.name,
-                bbPlayer: bbPlayer.name,
-                sbAmount,
-                bbAmount,
-                pot: this.pot
-            });
-        }
+        this.io.emit('blindsPosted', {
+          sbPlayer: sbPlayer.name,
+          bbPlayer: bbPlayer.name,
+          sbAmount,
+          bbAmount,
+          pot: this.pot
+        });
+      }
     } else {
-        // Round > 1 or Blinds Disabled
-        // Start with player after Dealer (SB position)
-        const startIdx = getNextActiveIndex(this.dealerPosition, false);
-        if (startIdx !== -1) {
-            firstPlayerId = this.playerOrder[startIdx];
-        }
+      // Round > 1 or Blinds Disabled
+      // Start with player after Dealer (SB position)
+      const startIdx = getNextActiveIndex(this.dealerPosition, false);
+      if (startIdx !== -1) {
+        firstPlayerId = this.playerOrder[startIdx];
+      }
     }
 
     // Fallback
     if (!firstPlayerId && this.playerOrder.length > 0) {
-        const fallbackIdx = getNextActiveIndex(this.dealerPosition, false);
-        if (fallbackIdx !== -1) firstPlayerId = this.playerOrder[fallbackIdx];
+      const fallbackIdx = getNextActiveIndex(this.dealerPosition, false);
+      if (fallbackIdx !== -1) firstPlayerId = this.playerOrder[fallbackIdx];
     }
 
     if (firstPlayerId) {
       this.activePlayerSocketId = firstPlayerId;
+      this.playerWhoInitiatedCurrentBettingAction = firstPlayerId;
       logGameEvent('BETTING_ROUND_STARTED_IN_GAME', { round: this.bettingRound, activePlayer: this.players[this.activePlayerSocketId].name });
       this.io.emit('bettingRoundStarted', {
         round: this.bettingRound,
@@ -715,9 +719,9 @@ class Game {
       return false;
     }
     if (player.isAllIn && action !== 'show') { // All-in players can't take further betting actions
-        this.io.to(socketId).emit('errorMessage', 'Spieler ist All-In und kann keine weiteren Aktionen außer Showdown durchführen.');
-        logError(new Error('Player action attempted while all-in'), { context: 'handlePlayerAction', socketId, action });
-        return false;
+      this.io.to(socketId).emit('errorMessage', 'Spieler ist All-In und kann keine weiteren Aktionen außer Showdown durchführen.');
+      logError(new Error('Player action attempted while all-in'), { context: 'handlePlayerAction', socketId, action });
+      return false;
     }
 
     let success = false;
@@ -727,7 +731,7 @@ class Game {
         case 'fold':
           success = await this.handleFold(socketId); // now async
           break;
-        case 'call': 
+        case 'call':
           success = await this.handleCall(socketId); // now async
           break;
         case 'raise':
@@ -755,20 +759,20 @@ class Game {
     // No explicit save here, sub-methods will call it if they complete successfully
     // OR, if sub-methods don't call moveToNextPlayer which saves, save here.
     // For now, assuming sub-methods + moveToNextPlayer handle saves.
-    return success; 
+    return success;
   }
 
   async handleFold(socketId) {
     const player = this.getPlayer(socketId); // Already validated in handlePlayerAction
     player.hasFolded = true;
-    
+
     // Remove player from eligible players in all pots
     if (this.pots && this.pots.length > 0) {
-        this.pots.forEach(pot => {
-            if (pot.eligiblePlayers) {
-                pot.eligiblePlayers = pot.eligiblePlayers.filter(id => id !== socketId);
-            }
-        });
+      this.pots.forEach(pot => {
+        if (pot.eligiblePlayers) {
+          pot.eligiblePlayers = pot.eligiblePlayers.filter(id => id !== socketId);
+        }
+      });
     }
 
     logGameEvent('PLAYER_FOLDED_IN_GAME', { socketId, name: player.name });
@@ -802,27 +806,27 @@ class Game {
         gameState: this.getGameStateSnapshot()
       });
     } else if (amountToCall > 0) {
-        player.balance -= amountToCall;
-        this.pot += amountToCall;
-        player.currentBetInRound += amountToCall;
-        logGameEvent('PLAYER_CALLED_IN_GAME', { socketId, name: player.name, amount: amountToCall });
-        this.io.emit('playerAction', {
-          player: player.name,
-          action: 'call',
-          amount: amountToCall,
-          playerBetInRound: player.currentBetInRound,
-          pot: this.pot,
-          gameState: this.getGameStateSnapshot()
-        });
+      player.balance -= amountToCall;
+      this.pot += amountToCall;
+      player.currentBetInRound += amountToCall;
+      logGameEvent('PLAYER_CALLED_IN_GAME', { socketId, name: player.name, amount: amountToCall });
+      this.io.emit('playerAction', {
+        player: player.name,
+        action: 'call',
+        amount: amountToCall,
+        playerBetInRound: player.currentBetInRound,
+        pot: this.pot,
+        gameState: this.getGameStateSnapshot()
+      });
     } else { // amountToCall is 0, effectively a check
-        logGameEvent('PLAYER_CHECKED_IN_GAME', { socketId, name: player.name });
-        this.io.emit('playerAction', {
-            player: player.name,
-            action: 'check',
-            playerBetInRound: player.currentBetInRound,
-            pot: this.pot,
-            gameState: this.getGameStateSnapshot()
-        });
+      logGameEvent('PLAYER_CHECKED_IN_GAME', { socketId, name: player.name });
+      this.io.emit('playerAction', {
+        player: player.name,
+        action: 'check',
+        playerBetInRound: player.currentBetInRound,
+        pot: this.pot,
+        gameState: this.getGameStateSnapshot()
+      });
     }
     await this.moveToNextPlayer(); // now async
     return true;
@@ -844,15 +848,15 @@ class Game {
     const actualRaiseOverCurrentMaxBet = (player.currentBetInRound + totalBetByPlayer) - this.currentBet;
 
     if (actualRaiseOverCurrentMaxBet < this.minimumRaise && this.currentBet > 0) {
-        this.io.to(socketId).emit('errorMessage', `Erhöhung muss mindestens ${this.minimumRaise} betragen oder der erste Einsatz sein.`);
-        logError(new Error('Raise too small'), { context: 'handleRaise', socketId, raiseAmount, minimumRaise: this.minimumRaise, currentBet: this.currentBet });
-        return false;
+      this.io.to(socketId).emit('errorMessage', `Erhöhung muss mindestens ${this.minimumRaise} betragen oder der erste Einsatz sein.`);
+      logError(new Error('Raise too small'), { context: 'handleRaise', socketId, raiseAmount, minimumRaise: this.minimumRaise, currentBet: this.currentBet });
+      return false;
     }
 
     player.balance -= totalBetByPlayer;
     this.pot += totalBetByPlayer;
     player.currentBetInRound += totalBetByPlayer;
-    
+
     this.lastRaise = actualRaiseOverCurrentMaxBet > 0 ? actualRaiseOverCurrentMaxBet : raiseAmount; // Track the size of the raise itself
     this.currentBet = player.currentBetInRound; // Das neue Höchstgebot in der Runde
     this.playerWhoMadeLastBetOrRaise = socketId; // Track who made the last significant action
@@ -870,7 +874,7 @@ class Game {
     await this.moveToNextPlayer(); // now async
     return true;
   }
-  
+
   async moveToNextPlayer() {
     const activePlayersInGame = this.getActivePlayers().filter(p => !p.isAllIn && p.balance > 0); // Players who can still make decisions
     const allInPlayersCount = this.getActivePlayers().filter(p => p.isAllIn).length;
@@ -882,31 +886,31 @@ class Game {
     }
     // If all players who can act are all-in, or only one player can act, proceed to showdown/next phase.
     if (activePlayersInGame.length === 0 && nonFoldedPlayersCount > 1 && this.bettingRound > 0) {
-        logGameEvent('ALL_REMAINING_PLAYERS_ALL_IN_OR_ONLY_ONE_CAN_ACT', { context: 'moveToNextPlayer' });
-        this.completeBettingRound();
-        return;
+      logGameEvent('ALL_REMAINING_PLAYERS_ALL_IN_OR_ONLY_ONE_CAN_ACT', { context: 'moveToNextPlayer' });
+      this.completeBettingRound();
+      return;
     }
     if (activePlayersInGame.length === 1 && nonFoldedPlayersCount > 1 && this.bettingRound > 0) {
-        // Only one player can make decisions, but others are all-in. Check if this player needs to act.
-        const decisionMaker = activePlayersInGame[0];
-        if (decisionMaker.currentBetInRound === this.currentBet && this.currentBet > 0) {
-            // This player has already matched the highest bet, or made it. Round ends.
-            logGameEvent('ONLY_ONE_DECISION_MAKER_MATCHED_BET', { context: 'moveToNextPlayer' });
-            this.completeBettingRound();
-            return;
-        }
-        // Otherwise, this player still needs to act.
+      // Only one player can make decisions, but others are all-in. Check if this player needs to act.
+      const decisionMaker = activePlayersInGame[0];
+      if (decisionMaker.currentBetInRound === this.currentBet && this.currentBet > 0) {
+        // This player has already matched the highest bet, or made it. Round ends.
+        logGameEvent('ONLY_ONE_DECISION_MAKER_MATCHED_BET', { context: 'moveToNextPlayer' });
+        this.completeBettingRound();
+        return;
+      }
+      // Otherwise, this player still needs to act.
     }
 
     let currentIndexInOrder = -1;
     if (this.activePlayerSocketId) {
-        currentIndexInOrder = this.playerOrder.indexOf(this.activePlayerSocketId);
+      currentIndexInOrder = this.playerOrder.indexOf(this.activePlayerSocketId);
     }
-    
+
     // Fallback if activePlayerSocketId is somehow invalid or not in order, find first valid player
     if (this.activePlayerSocketId && currentIndexInOrder === -1) {
-        logError(new Error(`Aktiver Spieler ${this.activePlayerSocketId} nicht in playerOrder gefunden beim Suchen des nächsten Spielers.`), { currentOrder: this.playerOrder, activeId: this.activePlayerSocketId });
-        this.activePlayerSocketId = null; // Reset to allow finding the first valid player
+      logError(new Error(`Aktiver Spieler ${this.activePlayerSocketId} nicht in playerOrder gefunden beim Suchen des nächsten Spielers.`), { currentOrder: this.playerOrder, activeId: this.activePlayerSocketId });
+      this.activePlayerSocketId = null; // Reset to allow finding the first valid player
     }
 
     let nextPlayerId = null;
@@ -921,104 +925,118 @@ class Game {
 
       if (potentialNextPlayer && potentialNextPlayer.isActive && !potentialNextPlayer.hasFolded && potentialNextPlayer.role === 'player') {
         if (!potentialNextPlayer.isAllIn || potentialNextPlayer.balance > 0) { // Player can act if not all-in OR if they somehow have balance despite being all-in (should not happen)
-            nextPlayerId = potentialNextPlayerId;
-            break;
+          nextPlayerId = potentialNextPlayerId;
+          break;
         }
       }
       nextIndex++;
       attempts++;
     }
-    
+
     if (!nextPlayerId && activePlayersInGame.length > 0) {
-        // This might happen if playerOrder is out of sync or all remaining players became all-in simultaneously in a weird way.
-        // Try to pick the first from activePlayersInGame as a fallback if loop fails.
-        nextPlayerId = activePlayersInGame[0].socketId;
-        logError(new Error("Fallback: Konnte nächsten Spieler nicht durch Standard-Loop finden, wähle ersten aktiven."), { activePlayersInGame });
+      // This might happen if playerOrder is out of sync or all remaining players became all-in simultaneously in a weird way.
+      // Try to pick the first from activePlayersInGame as a fallback if loop fails.
+      nextPlayerId = activePlayersInGame[0].socketId;
+      logError(new Error("Fallback: Konnte nächsten Spieler nicht durch Standard-Loop finden, wähle ersten aktiven."), { activePlayersInGame });
     }
 
     if (!nextPlayerId) {
-        logError(new Error("Konnte keinen nächsten Spieler finden, obwohl aktive Spieler vorhanden sein sollten."), { activePlayersCount: activePlayersInGame.length, nonFoldedCount: nonFoldedPlayersCount });
-        this.completeBettingRound(); // No one to move to
-        return;
+      logError(new Error("Konnte keinen nächsten Spieler finden, obwohl aktive Spieler vorhanden sein sollten."), { activePlayersCount: activePlayersInGame.length, nonFoldedCount: nonFoldedPlayersCount });
+      this.completeBettingRound(); // No one to move to
+      return;
     }
 
     // Determine if the betting round is over
     let roundOver = false;
     const playersToCheck = this.getActivePlayers(); // All non-folded players, including those all-in
 
+    logGameEvent('DEBUG_MOVE_TO_NEXT_PLAYER', {
+      nextPlayerId,
+      playerWhoInitiated: this.playerWhoInitiatedCurrentBettingAction,
+      playerWhoMadeLastBet: this.playerWhoMadeLastBetOrRaise,
+      currentBet: this.currentBet,
+      activePlayer: this.activePlayerSocketId
+    });
+
     if (playersToCheck.length <= 1) {
-        roundOver = true;
+      roundOver = true;
     } else {
-        // Condition 1: All players who can act have acted, and all bets are equalized.
-        // This means the action has come back to the player who made the last bet/raise,
-        // and everyone else has called or folded.
-        // Or, everyone has checked around.
+      // Condition 1: All players who can act have acted, and all bets are equalized.
+      // This means the action has come back to the player who made the last bet/raise,
+      // and everyone else has called or folded.
+      // Or, everyone has checked around.
 
-        const highestBetInRound = this.currentBet;
-        let allActivePlayersMatchedOrAllIn = true;
-        let countOfPlayersYetToActOnCurrentBet = 0;
+      const highestBetInRound = this.currentBet;
+      let allActivePlayersMatchedOrAllIn = true;
+      let countOfPlayersYetToActOnCurrentBet = 0;
 
-        for (const p of playersToCheck) {
-            if (p.isAllIn && p.currentBetInRound < highestBetInRound) continue; // All-in for less is fine
-            if (p.currentBetInRound !== highestBetInRound) {
-                allActivePlayersMatchedOrAllIn = false;
-                // If this player is the nextPlayerId, they still need to act on the current highest bet.
-                // If this player is NOT nextPlayerId, it means someone before nextPlayerId still needs to act.
-                if (p.socketId !== nextPlayerId) {
-                    // This implies an issue or a player before nextPlayerId needs to act.
-                }
-            }
-            // Check if this player has acted since the current highestBet was established by playerWhoMadeLastBetOrRaise
-            // This is complex. Simpler: if nextPlayerId is the one who made the last raise, and all others called/folded.
+      for (const p of playersToCheck) {
+        if (p.isAllIn && p.currentBetInRound < highestBetInRound) continue; // All-in for less is fine
+        if (p.currentBetInRound !== highestBetInRound) {
+          allActivePlayersMatchedOrAllIn = false;
+          // If this player is the nextPlayerId, they still need to act on the current highest bet.
+          // If this player is NOT nextPlayerId, it means someone before nextPlayerId still needs to act.
+          if (p.socketId !== nextPlayerId) {
+            // This implies an issue or a player before nextPlayerId needs to act.
+          }
         }
-        
-        // If there was a bet or raise that other players needed to respond to:
-        if (this.playerWhoMadeLastBetOrRaise) {
-            if (nextPlayerId === this.playerWhoMadeLastBetOrRaise && allActivePlayersMatchedOrAllIn) {
-                // Action is back to the aggressor, and everyone else has matched or folded/is all-in.
-                roundOver = true;
-            }
-        } else if (this.currentBet === 0) { // No bets or raises yet, players are checking
-            // If nextPlayerId is the one who started this betting round (playerWhoInitiatedCurrentBettingAction)
-            // and no bets have been made, it means everyone checked.
-            if (nextPlayerId === this.playerWhoInitiatedCurrentBettingAction && this.activePlayerSocketId !== null) {
-                 // Ensure the activePlayerSocketId (previous player) is not null, meaning at least one player has acted (checked).
-                roundOver = true;
-            }
+        // Check if this player has acted since the current highestBet was established by playerWhoMadeLastBetOrRaise
+        // This is complex. Simpler: if nextPlayerId is the one who made the last raise, and all others called/folded.
+      }
+
+      // If there was a bet or raise that other players needed to respond to:
+      if (this.playerWhoMadeLastBetOrRaise) {
+        if (nextPlayerId === this.playerWhoMadeLastBetOrRaise && allActivePlayersMatchedOrAllIn) {
+          // Action is back to the aggressor, and everyone else has matched or folded/is all-in.
+          roundOver = true;
         }
-        
-        // If only one player is not all-in and they have made/matched the current bet.
-        const playersWhoCanStillBet = playersToCheck.filter(p => !p.isAllIn && p.balance > 0);
-        if (playersWhoCanStillBet.length === 1 && playersToCheck.length > 1) {
-            if (playersWhoCanStillBet[0].currentBetInRound === this.currentBet) {
-                // The only player who can still bet has already matched the current bet (or made it).
-                // All others are all-in or folded. Round ends.
-                let othersAllInOrFolded = true;
-                for(const p of playersToCheck) {
-                    if (p.socketId === playersWhoCanStillBet[0].socketId) continue;
-                    if (!p.isAllIn && !p.hasFolded) {
-                        othersAllInOrFolded = false;
-                        break;
-                    }
-                }
-                if (othersAllInOrFolded) roundOver = true;
+      } else if (this.currentBet === 0) { // No bets or raises yet, players are checking
+        // If nextPlayerId is the one who started this betting round (playerWhoInitiatedCurrentBettingAction)
+        // and no bets have been made, it means everyone checked.
+        if (nextPlayerId === this.playerWhoInitiatedCurrentBettingAction && this.activePlayerSocketId !== null) {
+          // Ensure the activePlayerSocketId (previous player) is not null, meaning at least one player has acted (checked).
+          roundOver = true;
+        }
+      } else if (this.currentBet > 0 && !this.playerWhoMadeLastBetOrRaise) {
+        // Blinds case: No one raised, but there is a bet (blinds).
+        // If action returns to the player who started the action (UTG/SB), and everyone matched, round over.
+        if (nextPlayerId === this.playerWhoInitiatedCurrentBettingAction && allActivePlayersMatchedOrAllIn) {
+          roundOver = true;
+        }
+      }
+
+      // If only one player is not all-in and they have made/matched the current bet.
+      const playersWhoCanStillBet = playersToCheck.filter(p => !p.isAllIn && p.balance > 0);
+      if (playersWhoCanStillBet.length === 1 && playersToCheck.length > 1) {
+        if (playersWhoCanStillBet[0].currentBetInRound === this.currentBet) {
+          // The only player who can still bet has already matched the current bet (or made it).
+          // All others are all-in or folded. Round ends.
+          let othersAllInOrFolded = true;
+          for (const p of playersToCheck) {
+            if (p.socketId === playersWhoCanStillBet[0].socketId) continue;
+            if (!p.isAllIn && !p.hasFolded) {
+              othersAllInOrFolded = false;
+              break;
             }
+          }
+          if (othersAllInOrFolded) roundOver = true;
         }
-        if (playersWhoCanStillBet.length === 0 && playersToCheck.length > 1) {
-            // All remaining players are all-in, round ends, proceed to fill side pots / showdown.
-            roundOver = true;
-        }
+      }
+      if (playersWhoCanStillBet.length === 0 && playersToCheck.length > 1) {
+        // All remaining players are all-in, round ends, proceed to fill side pots / showdown.
+        roundOver = true;
+      }
     }
 
     if (roundOver) {
-        await this.completeBettingRound(); // now async
-        return;
+      await this.completeBettingRound(); // now async
+      return;
     }
-    
+
     this.activePlayerSocketId = nextPlayerId;
     // Set playerWhoInitiatedCurrentBettingAction if it's the first action of the round
     if (!this.playerWhoInitiatedCurrentBettingAction && this.players[this.activePlayerSocketId] && this.currentBet === 0) {
-        this.playerWhoInitiatedCurrentBettingAction = this.activePlayerSocketId;
+      this.playerWhoInitiatedCurrentBettingAction = this.activePlayerSocketId;
     }
 
     logGameEvent('ACTIVE_PLAYER_CHANGED_IN_GAME', { activePlayer: this.players[this.activePlayerSocketId]?.name, socketId: this.activePlayerSocketId, bettingRound: this.bettingRound, currentBet: this.currentBet });
@@ -1031,83 +1049,83 @@ class Game {
 
   async completeBettingRound() {
     logGameEvent('BETTING_ROUND_COMPLETED_IN_GAME', { round: this.bettingRound, pot: this.pot });
-    
+
     // --- Side Pot Logic Start ---
     const bets = [];
     this.getActivePlayers().forEach(p => {
-        // Include folded players' bets? No, their money is dead and goes to the pot they were eligible for.
-        // But wait, if they folded, they are not eligible anymore.
-        // Their money is already in 'this.pot' (aggregate).
-        // We need to distribute their 'currentBetInRound' into the pots.
-        // Even if they folded, their money contributes to the pot.
-        // So we should iterate ALL players who have bets in this round.
+      // Include folded players' bets? No, their money is dead and goes to the pot they were eligible for.
+      // But wait, if they folded, they are not eligible anymore.
+      // Their money is already in 'this.pot' (aggregate).
+      // We need to distribute their 'currentBetInRound' into the pots.
+      // Even if they folded, their money contributes to the pot.
+      // So we should iterate ALL players who have bets in this round.
     });
-    
+
     // Iterate all players (including folded) to gather bets
     Object.values(this.players).forEach(p => {
-        if (p.role === 'player' && p.currentBetInRound > 0) {
-            bets.push({ 
-                socketId: p.socketId, 
-                amount: p.currentBetInRound, 
-                isAllIn: p.isAllIn,
-                hasFolded: p.hasFolded
-            });
-        }
+      if (p.role === 'player' && p.currentBetInRound > 0) {
+        bets.push({
+          socketId: p.socketId,
+          amount: p.currentBetInRound,
+          isAllIn: p.isAllIn,
+          hasFolded: p.hasFolded
+        });
+      }
     });
 
     if (bets.length > 0) {
-        bets.sort((a, b) => a.amount - b.amount);
-        
-        // Ensure we have at least one pot if it's the first round
-        if (this.pots.length === 0) {
-             // Initially, all active non-folded players are eligible
-             const eligible = this.getActivePlayers().map(p => p.socketId);
-             this.pots.push({ amount: 0, eligiblePlayers: eligible });
-        }
+      bets.sort((a, b) => a.amount - b.amount);
 
-        let previousAmount = 0;
-        for (let i = 0; i < bets.length; i++) {
-            const bet = bets[i];
-            const contribution = bet.amount - previousAmount;
-            
-            if (contribution > 0) {
-                const contributors = bets.slice(i); // All players who bet at least this much
-                const potAmountToAdd = contribution * contributors.length;
-                
-                // Determine eligible players for this slice:
-                // Contributors who have NOT folded.
-                const sliceEligible = contributors
-                    .filter(c => !c.hasFolded)
-                    .map(c => c.socketId);
-                
-                // Get the current active pot (last one)
-                let activePot = this.pots[this.pots.length - 1];
-                
-                // Check if we need a new pot.
-                // We need a new pot if the set of eligible players for this slice is strictly smaller 
-                // than the active pot's eligible players.
-                // (e.g. someone went all-in and is no longer contributing to this slice)
-                
-                const areSetsEqual = (a, b) => {
-                    if (a.length !== b.length) return false;
-                    const setB = new Set(b);
-                    return a.every(val => setB.has(val));
-                };
-                
-                if (!areSetsEqual(activePot.eligiblePlayers, sliceEligible)) {
-                    // Create new side pot
-                    activePot = { amount: 0, eligiblePlayers: sliceEligible };
-                    this.pots.push(activePot);
-                }
-                
-                activePot.amount += potAmountToAdd;
-            }
-            previousAmount = bet.amount;
+      // Ensure we have at least one pot if it's the first round
+      if (this.pots.length === 0) {
+        // Initially, all active non-folded players are eligible
+        const eligible = this.getActivePlayers().map(p => p.socketId);
+        this.pots.push({ amount: 0, eligiblePlayers: eligible });
+      }
+
+      let previousAmount = 0;
+      for (let i = 0; i < bets.length; i++) {
+        const bet = bets[i];
+        const contribution = bet.amount - previousAmount;
+
+        if (contribution > 0) {
+          const contributors = bets.slice(i); // All players who bet at least this much
+          const potAmountToAdd = contribution * contributors.length;
+
+          // Determine eligible players for this slice:
+          // Contributors who have NOT folded.
+          const sliceEligible = contributors
+            .filter(c => !c.hasFolded)
+            .map(c => c.socketId);
+
+          // Get the current active pot (last one)
+          let activePot = this.pots[this.pots.length - 1];
+
+          // Check if we need a new pot.
+          // We need a new pot if the set of eligible players for this slice is strictly smaller 
+          // than the active pot's eligible players.
+          // (e.g. someone went all-in and is no longer contributing to this slice)
+
+          const areSetsEqual = (a, b) => {
+            if (a.length !== b.length) return false;
+            const setB = new Set(b);
+            return a.every(val => setB.has(val));
+          };
+
+          if (!areSetsEqual(activePot.eligiblePlayers, sliceEligible)) {
+            // Create new side pot
+            activePot = { amount: 0, eligiblePlayers: sliceEligible };
+            this.pots.push(activePot);
+          }
+
+          activePot.amount += potAmountToAdd;
         }
+        previousAmount = bet.amount;
+      }
     }
     // --- Side Pot Logic End ---
 
-    this.activePlayerSocketId = null; 
+    this.activePlayerSocketId = null;
     this.playerWhoMadeLastBetOrRaise = null; // Reset for next round
     this.playerWhoInitiatedCurrentBettingAction = null; // Reset for next round
     // this.currentBet = 0; // Reset in startNewBettingRound
@@ -1118,39 +1136,39 @@ class Game {
 
     // DETAILED LOGGING FOR SHOWDOWN CONDITION
     logGameEvent('DEBUG_SHOWDOWN_CONDITION_CHECK', {
-        bettingRound: this.bettingRound,
-        hintsLength: this.hints ? this.hints.length : 'undefined',
-        activeNonFoldedPlayerCount: activeNonFoldedPlayers.length,
-        areAllActiveNonFoldedPlayersAllIn: activeNonFoldedPlayers.length > 1 ? activeNonFoldedPlayers.every(p => p.isAllIn) : 'N/A (<=1 player)',
-        condition1_bettingRoundGe3: this.bettingRound >= 3,
-        condition2_noMoreHints: this.hints ? this.hints.length === 0 : 'N/A (hints undefined)',
-        condition3_allActivePlayersAllIn: activeNonFoldedPlayers.length > 1 && activeNonFoldedPlayers.every(p => p.isAllIn)
+      bettingRound: this.bettingRound,
+      hintsLength: this.hints ? this.hints.length : 'undefined',
+      activeNonFoldedPlayerCount: activeNonFoldedPlayers.length,
+      areAllActiveNonFoldedPlayersAllIn: activeNonFoldedPlayers.length > 1 ? activeNonFoldedPlayers.every(p => p.isAllIn) : 'N/A (<=1 player)',
+      condition1_bettingRoundGe3: this.bettingRound >= 3,
+      condition2_noMoreHints: this.hints ? this.hints.length === 0 : 'N/A (hints undefined)',
+      condition3_allActivePlayersAllIn: activeNonFoldedPlayers.length > 1 && activeNonFoldedPlayers.every(p => p.isAllIn)
     });
 
     if (activeNonFoldedPlayers.length === 1) {
-        this.state = GameState.SHOWDOWN; // Or a specific state for "winner by default"
-        this.io.emit('gameOver', {
-            message: `${activeNonFoldedPlayers[0].name} wins as all other players folded!`,
-            winner: activeNonFoldedPlayers[0].name,
-            pot: this.pot,
-            gameState: this.getGameStateSnapshot()
-        });
-        // Award pot to winner - this logic needs to be robust
-        this.awardPotToWinner(activeNonFoldedPlayers[0]);
-        // TODO: Reset game for next round or end game session
-        return; // End here, no further hints or betting
+      this.state = GameState.SHOWDOWN; // Or a specific state for "winner by default"
+      this.io.emit('gameOver', {
+        message: `${activeNonFoldedPlayers[0].name} wins as all other players folded!`,
+        winner: activeNonFoldedPlayers[0].name,
+        pot: this.pot,
+        gameState: this.getGameStateSnapshot()
+      });
+      // Award pot to winner - this logic needs to be robust
+      this.awardPotToWinner(activeNonFoldedPlayers[0]);
+      // TODO: Reset game for next round or end game session
+      return; // End here, no further hints or betting
     }
 
     if (this.bettingRound === 3) {
-        this.state = GameState.ANSWER_REVEAL;
-        if (this.hostSocketId) {
-            this.io.to(this.hostSocketId).emit('enableRevealAnswerButton', { enabled: true });
-        }
-        this.io.emit('bettingComplete', {
-            message: "Wettrunde 3 abgeschlossen. Der Host kann nun die Antwort enthüllen.",
-            pot: this.pot,
-            gameState: this.getGameStateSnapshot()
-        });
+      this.state = GameState.ANSWER_REVEAL;
+      if (this.hostSocketId) {
+        this.io.to(this.hostSocketId).emit('enableRevealAnswerButton', { enabled: true });
+      }
+      this.io.emit('bettingComplete', {
+        message: "Wettrunde 3 abgeschlossen. Der Host kann nun die Antwort enthüllen.",
+        pot: this.pot,
+        gameState: this.getGameStateSnapshot()
+      });
     } else if (this.bettingRound >= 4 || (this.hints && this.hints.length === 0) || (activeNonFoldedPlayers.length > 1 && activeNonFoldedPlayers.every(p => p.isAllIn))) {
       this.state = GameState.SHOWDOWN;
       if (this.hostSocketId) {
@@ -1207,24 +1225,24 @@ class Game {
     // Force bettingRound to match the state if we are in a hint phase
     // This overrides any mismatch that might have occurred
     if (this.state === GameState.HINT_1) {
-        this.bettingRound = 1;
+      this.bettingRound = 1;
     } else if (this.state === GameState.HINT_2) {
-        this.bettingRound = 2;
+      this.bettingRound = 2;
     }
 
     // Debug logging for hint issue
     logGameEvent('DEBUG_SHOW_HINT_ATTEMPT', {
-        state: this.state,
-        bettingRound: this.bettingRound,
-        hintsAvailable: this.hints ? this.hints.length : 'undefined',
-        hintsContent: this.hints,
-        expectedPhase: `HINT_${this.bettingRound}`
+      state: this.state,
+      bettingRound: this.bettingRound,
+      hintsAvailable: this.hints ? this.hints.length : 'undefined',
+      hintsContent: this.hints,
+      expectedPhase: `HINT_${this.bettingRound}`
     });
 
     if (this.state !== GameState[`HINT_${this.bettingRound}`]) {
-        this.io.to(actorSocketId).emit('errorMessage', `Hinweis kann nicht in der aktuellen Phase ${this.state} angezeigt werden. Erwartet HINT_${this.bettingRound}.`);
-        logError(new Error(`Hint cannot be shown in current phase ${this.state}. Expected HINT_${this.bettingRound}.`), { context: 'showHint', actorSocketId });
-        return false;
+      this.io.to(actorSocketId).emit('errorMessage', `Hinweis kann nicht in der aktuellen Phase ${this.state} angezeigt werden. Erwartet HINT_${this.bettingRound}.`);
+      logError(new Error(`Hint cannot be shown in current phase ${this.state}. Expected HINT_${this.bettingRound}.`), { context: 'showHint', actorSocketId });
+      return false;
     }
     if (!this.hints || this.hints.length === 0) {
       this.io.to(actorSocketId).emit('errorMessage', "Keine weiteren Hinweise verfügbar!");
@@ -1249,22 +1267,22 @@ class Game {
 
   async revealAnswer(actorSocketId) {
     if (actorSocketId !== this.hostSocketId) {
-        this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann die Antwort enthüllen.");
-        logError(new Error('Non-host tried to reveal answer'), { context: 'revealAnswer', actorSocketId });
-        return false;
+      this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann die Antwort enthüllen.");
+      logError(new Error('Non-host tried to reveal answer'), { context: 'revealAnswer', actorSocketId });
+      return false;
     }
     if (this.state !== GameState.ANSWER_REVEAL) {
-        this.io.to(actorSocketId).emit('errorMessage', "Antwort kann nicht in der aktuellen Spielphase enthüllt werden.");
-        logError(new Error('Reveal answer attempted in wrong phase'), { context: 'revealAnswer', actorSocketId, currentState: this.state });
-        return false;
+      this.io.to(actorSocketId).emit('errorMessage', "Antwort kann nicht in der aktuellen Spielphase enthüllt werden.");
+      logError(new Error('Reveal answer attempted in wrong phase'), { context: 'revealAnswer', actorSocketId, currentState: this.state });
+      return false;
     }
 
     logGameEvent('ANSWER_REVEALED', { host: this.players[this.hostSocketId]?.name, answer: this.correctAnswer });
-    
+
     this.io.emit('answerRevealed', {
-        answer: this.correctAnswer,
-        message: `Die korrekte Antwort ist: ${this.correctAnswer}. Es folgt die finale Wettrunde!`,
-        gameState: this.getGameStateSnapshot()
+      answer: this.correctAnswer,
+      message: `Die korrekte Antwort ist: ${this.correctAnswer}. Es folgt die finale Wettrunde!`,
+      gameState: this.getGameStateSnapshot()
     });
 
     // Start final betting round (Round 4)
@@ -1274,71 +1292,74 @@ class Game {
 
   async awardPotToWinner(winnerPlayerObject) {
     if (winnerPlayerObject && this.players[winnerPlayerObject.socketId]) {
-        this.players[winnerPlayerObject.socketId].balance += this.pot;
-        logGameEvent('POT_AWARDED', { winner: winnerPlayerObject.name, amount: this.pot, newBalance: this.players[winnerPlayerObject.socketId].balance });
-        this.pot = 0;
-        // Broadcast new balances
-        this.io.emit('gameStateUpdate', this.getGameStateSnapshot()); // Or a specific event for balance changes
-        await this._saveGameToDB();
+      this.players[winnerPlayerObject.socketId].balance += this.pot;
+      logGameEvent('POT_AWARDED', { winner: winnerPlayerObject.name, amount: this.pot, newBalance: this.players[winnerPlayerObject.socketId].balance });
+      this.pot = 0;
+      
+      this.checkAndProcessEliminations(); // Check for eliminations
+
+      // Broadcast new balances
+      this.io.emit('gameStateUpdate', this.getGameStateSnapshot()); // Or a specific event for balance changes
+      await this._saveGameToDB();
     } else {
-        logError(new Error('Winner player object not found for awarding pot'), { winnerPlayerObject });
+      logError(new Error('Winner player object not found for awarding pot'), { winnerPlayerObject });
     }
   }
 
   // Placeholder for showdown logic
   async handleShowdown(actorSocketId) {
     if (actorSocketId !== this.hostSocketId) {
-        this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann den Showdown starten.");
-        logError(new Error('Non-host tried to start showdown'), { context: 'handleShowdown', actorSocketId });
-        return false;
+      this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann den Showdown starten.");
+      logError(new Error('Non-host tried to start showdown'), { context: 'handleShowdown', actorSocketId });
+      return false;
     }
     if (this.state !== GameState.SHOWDOWN) {
-        this.io.to(actorSocketId).emit('errorMessage', "Showdown kann nicht in der aktuellen Spielphase gestartet werden.");
-        logError(new Error('Showdown attempted in wrong phase'), { context: 'handleShowdown', actorSocketId, currentState: this.state });
-        return false;
+      this.io.to(actorSocketId).emit('errorMessage', "Showdown kann nicht in der aktuellen Spielphase gestartet werden.");
+      logError(new Error('Showdown attempted in wrong phase'), { context: 'handleShowdown', actorSocketId, currentState: this.state });
+      return false;
     }
 
     logGameEvent('SHOWDOWN_INITIATED', { host: this.players[this.hostSocketId]?.name });
 
     const participatingPlayers = this.getActivePlayers(); // Players who haven't folded
     if (participatingPlayers.length === 0) {
-        this.io.emit('gameOver', { message: "Keine Spieler mehr im Spiel für Showdown.", gameState: this.getGameStateSnapshot() });
-        // TODO: Reset game logic
-        return true;
+      this.io.emit('gameOver', { message: "Keine Spieler mehr im Spiel für Showdown.", gameState: this.getGameStateSnapshot() });
+      // TODO: Reset game logic
+      return true;
     }
     if (participatingPlayers.length === 1) {
-        // If only one player remains, they win ALL pots they are eligible for.
-        // Actually, if everyone else folded, the remaining player wins EVERYTHING on the table.
-        // Because folded players surrendered their claims to all pots.
-        // So we can just sum up all pots and give to the winner.
-        
-        let totalPotAmount = this.pot;
-        // Double check with pots array if it exists
-        if (this.pots && this.pots.length > 0) {
-            totalPotAmount = this.pots.reduce((sum, p) => sum + p.amount, 0);
-            // Add any current round bets that might not be in pots yet? 
-            // No, handleShowdown is called after completeBettingRound usually?
-            // Wait, handleShowdown is called explicitly by Host.
-            // If called after completeBettingRound, pots are populated.
-        }
-        
-        // Just use this.pot as it tracks the total
-        this.players[participatingPlayers[0].socketId].balance += this.pot;
-        
-        this.io.emit('gameOver', {
-            message: `${participatingPlayers[0].name} gewinnt den Pot, da alle anderen gepasst haben!`,
-            winner: participatingPlayers[0].name,
-            pot: this.pot, // Pot should be 0 after awardPotToWinner if called before this emit
-            finalAnswers: this.getFinalAnswersForShowdown(),
-            correctAnswer: this.correctAnswer,
-            gameState: this.getGameStateSnapshot() // Snapshot after pot awarded
-        });
-        
-        this.pot = 0;
-        this.pots = [];
-        
-        this.resetForNextRound();
-        return true;
+      // If only one player remains, they win ALL pots they are eligible for.
+      // Actually, if everyone else folded, the remaining player wins EVERYTHING on the table.
+      // Because folded players surrendered their claims to all pots.
+      // So we can just sum up all pots and give to the winner.
+
+      let totalPotAmount = this.pot;
+      // Double check with pots array if it exists
+      if (this.pots && this.pots.length > 0) {
+        totalPotAmount = this.pots.reduce((sum, p) => sum + p.amount, 0);
+        // Add any current round bets that might not be in pots yet? 
+        // No, handleShowdown is called after completeBettingRound usually?
+        // Wait, handleShowdown is called explicitly by Host.
+        // If called after completeBettingRound, pots are populated.
+      }
+
+      // Just use this.pot as it tracks the total
+      this.players[participatingPlayers[0].socketId].balance += this.pot;
+
+      this.io.emit('gameOver', {
+        message: `${participatingPlayers[0].name} gewinnt den Pot, da alle anderen gepasst haben!`,
+        winner: participatingPlayers[0].name,
+        pot: this.pot, // Pot should be 0 after awardPotToWinner if called before this emit
+        finalAnswers: this.getFinalAnswersForShowdown(),
+        correctAnswer: this.correctAnswer,
+        gameState: this.getGameStateSnapshot() // Snapshot after pot awarded
+      });
+
+      this.pot = 0;
+      this.pots = [];
+
+      this.resetForNextRound();
+      return true;
     }
 
     // Determine winner(s) based on answers
@@ -1348,82 +1369,104 @@ class Game {
 
     // If no pots defined (legacy/fallback), treat 'this.pot' as main pot
     if (!this.pots || this.pots.length === 0) {
-        this.pots = [{ amount: this.pot, eligiblePlayers: participatingPlayers.map(p => p.socketId) }];
+      this.pots = [{ amount: this.pot, eligiblePlayers: participatingPlayers.map(p => p.socketId) }];
     }
 
     this.pots.forEach((pot, index) => {
-        if (pot.amount <= 0) return;
+      if (pot.amount <= 0) return;
 
-        // Find eligible players for this pot who are still active (not folded)
-        // Note: participatingPlayers already filters out folded players.
-        // We just need to intersect participatingPlayers with pot.eligiblePlayers
-        const eligibleForPot = participatingPlayers.filter(p => pot.eligiblePlayers.includes(p.socketId));
+      // Find eligible players for this pot who are still active (not folded)
+      // Note: participatingPlayers already filters out folded players.
+      // We just need to intersect participatingPlayers with pot.eligiblePlayers
+      const eligibleForPot = participatingPlayers.filter(p => pot.eligiblePlayers.includes(p.socketId));
 
-        if (eligibleForPot.length === 0) {
-            // Should not happen if logic is correct, but if so, money stays? or goes to next pot?
-            // Or goes to random? Let's log error.
-            logError(new Error(`No eligible players for pot ${index}`), { pot });
-            return;
+      if (eligibleForPot.length === 0) {
+        // Should not happen if logic is correct, but if so, money stays? or goes to next pot?
+        // Or goes to random? Let's log error.
+        logError(new Error(`No eligible players for pot ${index}`), { pot });
+        return;
+      }
+
+      let winners = [];
+      let closestDiff = Infinity;
+
+      eligibleForPot.forEach(player => {
+        const answerVal = parseFloat(player.finalAnswer);
+        if (isNaN(answerVal)) {
+          player.accuracy = Infinity;
+          return;
         }
+        player.accuracy = Math.abs(answerVal - this.correctAnswer);
+        if (player.accuracy < closestDiff) {
+          closestDiff = player.accuracy;
+          winners = [player];
+        } else if (player.accuracy === closestDiff) {
+          winners.push(player);
+        }
+      });
 
-        let winners = [];
-        let closestDiff = Infinity;
-
-        eligibleForPot.forEach(player => {
-            const answerVal = parseFloat(player.finalAnswer);
-            if (isNaN(answerVal)) {
-                player.accuracy = Infinity; 
-                return;
-            }
-            player.accuracy = Math.abs(answerVal - this.correctAnswer);
-            if (player.accuracy < closestDiff) {
-                closestDiff = player.accuracy;
-                winners = [player];
-            } else if (player.accuracy === closestDiff) {
-                winners.push(player);
-            }
+      if (winners.length > 0) {
+        const potPerWinner = Math.floor(pot.amount / winners.length);
+        winners.forEach(winner => {
+          this.players[winner.socketId].balance += potPerWinner;
+          potDistribution[winner.name] = (potDistribution[winner.name] || 0) + potPerWinner;
+          if (!allWinners.find(w => w.socketId === winner.socketId)) {
+            allWinners.push(winner);
+          }
         });
-
-        if (winners.length > 0) {
-            const potPerWinner = Math.floor(pot.amount / winners.length);
-            winners.forEach(winner => {
-                this.players[winner.socketId].balance += potPerWinner;
-                potDistribution[winner.name] = (potDistribution[winner.name] || 0) + potPerWinner;
-                if (!allWinners.find(w => w.socketId === winner.socketId)) {
-                    allWinners.push(winner);
-                }
-            });
-            const remainder = pot.amount % winners.length;
-            if (remainder > 0) { 
-                this.players[winners[0].socketId].balance += remainder;
-                potDistribution[winners[0].name] = (potDistribution[winners[0].name] || 0) + remainder;
-            }
+        const remainder = pot.amount % winners.length;
+        if (remainder > 0) {
+          this.players[winners[0].socketId].balance += remainder;
+          potDistribution[winners[0].name] = (potDistribution[winners[0].name] || 0) + remainder;
         }
+      }
     });
 
     this.pot = 0; // Reset total pot display
     this.pots = []; // Reset pots
 
-    logGameEvent('SHOWDOWN_COMPLETED', { winners: allWinners.map(w=>w.name), potDistribution, correctAnswer: this.correctAnswer });
+    logGameEvent('SHOWDOWN_COMPLETED', { winners: allWinners.map(w => w.name), potDistribution, correctAnswer: this.correctAnswer });
 
     this.io.emit('showdownResults', {
-        winners: allWinners.map(w => ({ name: w.name, finalAnswer: w.finalAnswer, accuracy: w.accuracy })),
-        potDistribution,
-        correctAnswer: this.correctAnswer,
-        finalAnswers: this.getFinalAnswersForShowdown(),
-        gameState: this.getGameStateSnapshot() // Snapshot after pot awarded
+      winners: allWinners.map(w => ({ name: w.name, finalAnswer: w.finalAnswer, accuracy: w.accuracy })),
+      potDistribution,
+      correctAnswer: this.correctAnswer,
+      finalAnswers: this.getFinalAnswersForShowdown(),
+      gameState: this.getGameStateSnapshot() // Snapshot after pot awarded
     });
-    
+
+    this.checkAndProcessEliminations(); // Check for eliminations after showdown
+
     await this.resetForNextRound(); // now async
     return true;
+  }
+
+  checkAndProcessEliminations() {
+    let eliminations = [];
+    Object.values(this.players).forEach(player => {
+      if (player.role === 'player' && player.balance <= 0 && !player.isEliminated) {
+        player.isEliminated = true;
+        player.isActive = false;
+        player.hasFolded = true; // Ensure they don't get turns
+        eliminations.push(player.name);
+        logGameEvent('PLAYER_ELIMINATED', { socketId: player.socketId, name: player.name });
+      }
+    });
+    
+    if (eliminations.length > 0) {
+        this.io.emit('playersEliminated', { 
+            eliminatedPlayers: eliminations,
+            message: `${eliminations.join(', ')} ran out of chips and is eliminated!`
+        });
+    }
   }
 
   getFinalAnswersForShowdown() {
     const answers = {};
     Object.values(this.players).forEach(p => {
-        if (p.role === 'player' && p.finalAnswer !== null) {
-            answers[p.name] = p.finalAnswer;
-        }
+      if (p.role === 'player' && p.finalAnswer !== null) {
+        answers[p.name] = p.finalAnswer;
+      }
     });
     return answers;
   }
@@ -1443,36 +1486,42 @@ class Game {
     this.actionHistory = []; // Clear action history for the new round
 
     Object.values(this.players).forEach(player => {
-        if (player.role === 'player') {
-            player.finalAnswer = null;
-            player.isAnswerRevealed = false; // Reset revealed status
-            player.currentBetInRound = 0;
-            player.hasFolded = false;
-            player.isAllIn = false; // Reset all-in status
+      if (player.role === 'player') {
+        player.finalAnswer = null;
+        player.isAnswerRevealed = false; // Reset revealed status
+        player.currentBetInRound = 0;
+        player.hasFolded = false;
+        player.isAllIn = false; // Reset all-in status
+        if (player.isEliminated) {
+            player.isActive = false;
+            player.hasFolded = true; // Keep folded
+        } else {
+            player.isActive = true; // Unfold everyone else
         }
+      }
     });
 
     this.roundNumber++; // Increment round number
-    
+
     // Rotate dealer position
     if (this.playerOrder.length > 0) {
-        this.dealerPosition = (this.dealerPosition + 1) % this.playerOrder.length;
+      this.dealerPosition = (this.dealerPosition + 1) % this.playerOrder.length;
     }
-    
+
     // Check if blinds just increased
     if (this.blindsEnabled) {
-        const baseMinBet = 20;
-        const increaseInterval = 3;
-        const prevMultiplier = Math.pow(2, Math.floor((this.roundNumber - 2) / increaseInterval));
-        const newMultiplier = Math.pow(2, Math.floor((this.roundNumber - 1) / increaseInterval));
-        
-        if (newMultiplier > prevMultiplier) {
-            const newMinBet = baseMinBet * newMultiplier;
-            this.io.emit('blindsIncreased', { 
-                message: `⚠️ Blinds Increased! Minimum bet is now ${newMinBet}.`,
-                newMinBet 
-            });
-        }
+      const baseMinBet = 20;
+      const increaseInterval = 3;
+      const prevMultiplier = Math.pow(2, Math.floor((this.roundNumber - 2) / increaseInterval));
+      const newMultiplier = Math.pow(2, Math.floor((this.roundNumber - 1) / increaseInterval));
+
+      if (newMultiplier > prevMultiplier) {
+        const newMinBet = baseMinBet * newMultiplier;
+        this.io.emit('blindsIncreased', {
+          message: `⚠️ Blinds Increased! Minimum bet is now ${newMinBet}.`,
+          newMinBet
+        });
+      }
     }
 
     logGameEvent('GAME_RESET_FOR_NEXT_ROUND', { roundNumber: this.roundNumber });
@@ -1482,57 +1531,58 @@ class Game {
 
   getGameStateSnapshot() {
     return {
-        gameId: this.gameId,
-        players: Object.values(this.players)
-            .filter(p => p && typeof p === 'object' && p.socketId && !p.socketId.startsWith('$') && p.name) // Filter out invalid objects (Mongoose internals, empty objects)
-            .map(p => ({
-            // Ensure 'p' is a valid player object.
-            // The 'id' property was an issue. Player objects in this.players are keyed by socketId.
-            // The player object itself should have a socketId or a unique id property.
-            // Assuming player objects have 'socketId' and 'name', 'balance' etc.
-            id: p.socketId, // Use socketId as the unique identifier for the player in the snapshot
-            socketId: p.socketId, // Also include socketId for frontend compatibility
-            name: p.name,
-            role: p.role, // Include role for filtering
-            avatarSeed: p.avatarSeed || p.name, // Include avatar seed
-            balance: p.balance || 1000, // Changed from 'chips' to 'balance' to match player object, default to 1000
-            score: this.playerScores[p.socketId] || 0, // Use p.socketId for scores
-            isDealer: this.playerOrder[this.dealerPosition] === p.socketId,
-            isCurrentTurn: this.activePlayerSocketId === p.socketId,
-            currentBetInRound: p.currentBetInRound || 0,
-            hasFolded: p.hasFolded || false,
-            isActive: p.isActive !== undefined ? p.isActive : true,
-            isAllIn: p.isAllIn || false, // Assuming player object has isAllIn
-            isAnswerRevealed: p.isAnswerRevealed || false,
-            finalAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING || p.isAnswerRevealed) ? p.finalAnswer : undefined, // Show answers only at showdown/end or if revealed
-            hasAnswered: p.finalAnswer !== null && p.finalAnswer !== undefined,
+      gameId: this.gameId,
+      players: Object.values(this.players)
+        .filter(p => p && typeof p === 'object' && p.socketId && !p.socketId.startsWith('$') && p.name) // Filter out invalid objects (Mongoose internals, empty objects)
+        .map(p => ({
+          // Ensure 'p' is a valid player object.
+          // The 'id' property was an issue. Player objects in this.players are keyed by socketId.
+          // The player object itself should have a socketId or a unique id property.
+          // Assuming player objects have 'socketId' and 'name', 'balance' etc.
+          id: p.socketId, // Use socketId as the unique identifier for the player in the snapshot
+          socketId: p.socketId, // Also include socketId for frontend compatibility
+          name: p.name,
+          role: p.role, // Include role for filtering
+          avatarSeed: p.avatarSeed || p.name, // Include avatar seed
+          balance: p.balance || 1000, // Changed from 'chips' to 'balance' to match player object, default to 1000
+          score: this.playerScores[p.socketId] || 0, // Use p.socketId for scores
+          isDealer: this.playerOrder[this.dealerPosition] === p.socketId,
+          isCurrentTurn: this.activePlayerSocketId === p.socketId,
+          currentBetInRound: p.currentBetInRound || 0,
+          hasFolded: p.hasFolded || false,
+          isActive: p.isActive !== undefined ? p.isActive : true,
+          isEliminated: p.isEliminated || false,
+          isAllIn: p.isAllIn || false, // Assuming player object has isAllIn
+          isAnswerRevealed: p.isAnswerRevealed || false,
+          finalAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING || p.isAnswerRevealed) ? p.finalAnswer : undefined, // Show answers only at showdown/end or if revealed
+          hasAnswered: p.finalAnswer !== null && p.finalAnswer !== undefined,
         })),
-        hostSocketId: this.hostSocketId,
-        state: this.state,
-        currentQuestion: this.currentQuestion ? {
-            question: this.currentQuestion.question, // Changed from 'text'
-            category: this.currentQuestion.category,
-            // Do NOT send correctAnswer or hints here unless explicitly needed by phase
-            hintsAvailable: this.hints ? this.hints.length > 0 : false, // Based on remaining hints in game state
-            // timeRemaining: ... (if you add question timers)
-        } : null,
-        revealedHints: this.revealedHints || [], // Track which hints have been revealed
-        pot: this.pot,
-        currentBet: this.currentBet, // Highest bet to call in current betting round
-        smallBlind: this.smallBlind,
-        bigBlind: this.bigBlind,
-        dealerPositionName: this.players[this.playerOrder[this.dealerPosition]]?.name, // Name of dealer
-        activePlayerName: this.players[this.activePlayerSocketId]?.name, // Name of current player
-        activePlayerSocketId: this.activePlayerSocketId, // Socket ID of current player (for frontend)
-        roundNumber: this.roundNumber,
-        bettingRound: this.bettingRound, // Current betting sub-round (1, 2, 3)
-        blindsEnabled: this.blindsEnabled, // Include blinds state
-        // communityCards: this.communityCards, // If you add poker hand evaluation
-        actionHistory: this.actionHistory.slice(-10), 
-        gameLog: this.gameLog.slice(-5),
-        minimumRaise: this.minimumRaise,
-        correctAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING || this.state === GameState.BETTING_ROUND_4) ? this.correctAnswer : undefined, // Show correct answer only at showdown/end or after reveal (Round 4)
-        // roundResults: this.roundResults, // If you have a dedicated round results object
+      hostSocketId: this.hostSocketId,
+      state: this.state,
+      currentQuestion: this.currentQuestion ? {
+        question: this.currentQuestion.question, // Changed from 'text'
+        category: this.currentQuestion.category,
+        // Do NOT send correctAnswer or hints here unless explicitly needed by phase
+        hintsAvailable: this.hints ? this.hints.length > 0 : false, // Based on remaining hints in game state
+        // timeRemaining: ... (if you add question timers)
+      } : null,
+      revealedHints: this.revealedHints || [], // Track which hints have been revealed
+      pot: this.pot,
+      currentBet: this.currentBet, // Highest bet to call in current betting round
+      smallBlind: this.smallBlind,
+      bigBlind: this.bigBlind,
+      dealerPositionName: this.players[this.playerOrder[this.dealerPosition]]?.name, // Name of dealer
+      activePlayerName: this.players[this.activePlayerSocketId]?.name, // Name of current player
+      activePlayerSocketId: this.activePlayerSocketId, // Socket ID of current player (for frontend)
+      roundNumber: this.roundNumber,
+      bettingRound: this.bettingRound, // Current betting sub-round (1, 2, 3)
+      blindsEnabled: this.blindsEnabled, // Include blinds state
+      // communityCards: this.communityCards, // If you add poker hand evaluation
+      actionHistory: this.actionHistory.slice(-10),
+      gameLog: this.gameLog.slice(-5),
+      minimumRaise: this.minimumRaise,
+      correctAnswer: (this.state === GameState.SHOWDOWN || this.state === GameState.WAITING || this.state === GameState.BETTING_ROUND_4) ? this.correctAnswer : undefined, // Show correct answer only at showdown/end or after reveal (Round 4)
+      // roundResults: this.roundResults, // If you have a dedicated round results object
     };
   }
 
@@ -1541,47 +1591,47 @@ class Game {
     // For now, client gets the same full snapshot. 
     // Add redaction logic here if needed, similar to the previous version.
     // Example: Hiding other players' final answers unless it's showdown.
-    
+
     // If it's not showdown or game end, and the client is a player, hide other players' final answers.
     if (this.state !== GameState.SHOWDOWN && this.state !== GameState.WAITING && this.state !== GameState.BETTING_ROUND_4) {
-        fullState.players.forEach(p => {
-            if (p.id !== socketId && !p.isAnswerRevealed) { // Allow if revealed
-                delete p.finalAnswer;
-            }
-        });
-        delete fullState.correctAnswer; // Also hide correct answer until showdown
+      fullState.players.forEach(p => {
+        if (p.id !== socketId && !p.isAnswerRevealed) { // Allow if revealed
+          delete p.finalAnswer;
+        }
+      });
+      delete fullState.correctAnswer; // Also hide correct answer until showdown
     }
-    
+
     // Add player-specific info
     const playerSelf = this.players[socketId];
     if (playerSelf) {
-        fullState.myPlayerInfo = {
-            socketId: playerSelf.socketId,
-            name: playerSelf.name,
-            balance: playerSelf.balance,
-            score: this.playerScores[playerSelf.socketId] || 0,
-            finalAnswer: playerSelf.finalAnswer, // They can always see their own answer
-            isAnswerRevealed: playerSelf.isAnswerRevealed || false,
-            // any other specific details for the player
-        };
+      fullState.myPlayerInfo = {
+        socketId: playerSelf.socketId,
+        name: playerSelf.name,
+        balance: playerSelf.balance,
+        score: this.playerScores[playerSelf.socketId] || 0,
+        finalAnswer: playerSelf.finalAnswer, // They can always see their own answer
+        isAnswerRevealed: playerSelf.isAnswerRevealed || false,
+        // any other specific details for the player
+      };
     }
-    
+
     if (socketId === this.hostSocketId) {
-        fullState.isHost = true;
-        // Host always sees all answers
-        fullState.players.forEach(p => {
-             const originalPlayer = this.players[p.id];
-             if (originalPlayer && originalPlayer.finalAnswer !== null && originalPlayer.finalAnswer !== undefined) {
-                 p.finalAnswer = originalPlayer.finalAnswer;
-             }
-        });
-        
-        // Host might get more details, e.g., all final answers during answering phase for verification
-        if (this.state === GameState.ANSWERING) {
-            fullState.allFinalAnswers = Object.values(this.players)
-                .filter(p => p.role === 'player' && p.finalAnswer !== null)
-                .map(p => ({ name: p.name, answer: p.finalAnswer }));
+      fullState.isHost = true;
+      // Host always sees all answers
+      fullState.players.forEach(p => {
+        const originalPlayer = this.players[p.id];
+        if (originalPlayer && originalPlayer.finalAnswer !== null && originalPlayer.finalAnswer !== undefined) {
+          p.finalAnswer = originalPlayer.finalAnswer;
         }
+      });
+
+      // Host might get more details, e.g., all final answers during answering phase for verification
+      if (this.state === GameState.ANSWERING) {
+        fullState.allFinalAnswers = Object.values(this.players)
+          .filter(p => p.role === 'player' && p.finalAnswer !== null)
+          .map(p => ({ name: p.name, answer: p.finalAnswer }));
+      }
     }
 
     return fullState;
@@ -1589,8 +1639,8 @@ class Game {
 
   async resetRound(actorSocketId) {
     if (actorSocketId !== this.hostSocketId) {
-        this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann die Runde zurücksetzen.");
-        return false;
+      this.io.to(actorSocketId).emit('errorMessage', "Nur der Host kann die Runde zurücksetzen.");
+      return false;
     }
 
     // Reset state to ANSWERING
@@ -1598,28 +1648,29 @@ class Game {
     this.bettingRound = 0;
     this.currentBet = 0;
     this.activePlayerSocketId = null;
+    this.clearTurnTimer();
     this.revealedHints = [];
-    
+
     // Reset player round-specific flags
     Object.values(this.players).forEach(player => {
-        if (player.role === 'player') {
-            player.finalAnswer = null;
-            player.currentBetInRound = 0;
-            player.hasFolded = false;
-            player.isAllIn = false;
-            player.isActive = true; // Unfold everyone
-        }
+      if (player.role === 'player') {
+        player.finalAnswer = null;
+        player.currentBetInRound = 0;
+        player.hasFolded = false;
+        player.isAllIn = false;
+        player.isActive = true; // Unfold everyone
+      }
     });
 
     logGameEvent('ROUND_RESET_BY_HOST', { hostSocketId: actorSocketId });
 
     // Notify clients
     this.io.emit('gameStarted', {
-        question: this.currentQuestion ? this.currentQuestion.question : "Round Reset",
-        gameState: this.getGameStateSnapshot(),
-        phase: 'ANSWERING'
+      question: this.currentQuestion ? this.currentQuestion.question : "Round Reset",
+      gameState: this.getGameStateSnapshot(),
+      phase: 'ANSWERING'
     });
-    
+
     await this._saveGameToDB();
     return true;
   }
@@ -1627,57 +1678,57 @@ class Game {
   async revealPlayerAnswer(socketId) {
     const player = this.getPlayer(socketId);
     if (!player || player.finalAnswer === null) {
-        return false;
+      return false;
     }
     player.isAnswerRevealed = true;
     logGameEvent('PLAYER_REVEALED_ANSWER', { socketId, name: player.name, answer: player.finalAnswer });
-    
-    this.io.emit('playerRevealedAnswer', { 
-        playerId: socketId, 
-        answer: player.finalAnswer,
-        gameState: this.getGameStateSnapshot() 
+
+    this.io.emit('playerRevealedAnswer', {
+      playerId: socketId,
+      answer: player.finalAnswer,
+      gameState: this.getGameStateSnapshot()
     });
-    
+
     await this._saveGameToDB();
     return true;
   }
 
   async kickPlayer(hostSocketId, targetSocketId) {
     if (hostSocketId !== this.hostSocketId) {
-        this.io.to(hostSocketId).emit('errorMessage', "Nur der Host kann Spieler kicken.");
-        return false;
+      this.io.to(hostSocketId).emit('errorMessage', "Nur der Host kann Spieler kicken.");
+      return false;
     }
     const player = this.players[targetSocketId];
     if (!player) return false;
 
     logGameEvent('PLAYER_KICKED_BY_HOST', { host: this.players[hostSocketId]?.name, target: player.name });
-    
+
     // Send specific message to kicked player before removing
     this.io.to(targetSocketId).emit('kicked', { message: 'Du wurdest vom Host aus dem Spiel entfernt.' });
-    
+
     await this.removePlayer(targetSocketId);
     return true;
   }
 
   async adjustPlayerBalance(hostSocketId, targetSocketId, amount) {
     if (hostSocketId !== this.hostSocketId) {
-        this.io.to(hostSocketId).emit('errorMessage', "Nur der Host kann Guthaben ändern.");
-        return false;
+      this.io.to(hostSocketId).emit('errorMessage', "Nur der Host kann Guthaben ändern.");
+      return false;
     }
     const player = this.players[targetSocketId];
     if (!player) return false;
 
     const oldBalance = player.balance;
     player.balance += amount;
-    
-    logGameEvent('HOST_ADJUSTED_BALANCE', { 
-        host: this.players[hostSocketId]?.name, 
-        target: player.name, 
-        amount, 
-        oldBalance,
-        newBalance: player.balance 
+
+    logGameEvent('HOST_ADJUSTED_BALANCE', {
+      host: this.players[hostSocketId]?.name,
+      target: player.name,
+      amount,
+      oldBalance,
+      newBalance: player.balance
     });
-    
+
     this.io.emit('gameStateUpdate', this.getGameStateSnapshot());
     await this._saveGameToDB();
     return true;
@@ -1685,16 +1736,16 @@ class Game {
 
   async toggleBlinds(hostSocketId, enabled) {
     if (hostSocketId !== this.hostSocketId) {
-        return false;
+      return false;
     }
     this.blindsEnabled = enabled;
     logGameEvent('BLINDS_TOGGLED', { enabled });
-    
+
     // If disabled, reset min bet immediately for next round logic
     if (!enabled) {
-        this.minimumRaise = 20;
+      this.minimumRaise = 20;
     }
-    
+
     this.io.emit('blindsStateChanged', { enabled, minimumRaise: this.minimumRaise });
     await this._saveGameToDB();
     return true;
